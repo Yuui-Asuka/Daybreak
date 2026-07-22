@@ -195,6 +195,49 @@ namespace Daybreak
 
         */
 
+        VkAttachmentDescription depthAttachment{};
+
+        depthAttachment.format =
+            VK_FORMAT_D32_SFLOAT;
+
+
+        depthAttachment.samples =
+            VK_SAMPLE_COUNT_1_BIT;
+
+
+        depthAttachment.loadOp =
+            VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+
+        depthAttachment.storeOp =
+            VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+
+        depthAttachment.stencilLoadOp =
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+
+
+        depthAttachment.stencilStoreOp =
+            VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+
+        depthAttachment.initialLayout =
+            VK_IMAGE_LAYOUT_UNDEFINED;
+
+
+        depthAttachment.finalLayout =
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthAttachmentRef{};
+
+
+        depthAttachmentRef.attachment =
+            1;
+
+
+        depthAttachmentRef.layout =
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
         VkSubpassDescription subpass{};
 
 
@@ -209,6 +252,8 @@ namespace Daybreak
         subpass.pColorAttachments =
             &colorAttachmentRef;
 
+        subpass.pDepthStencilAttachment =
+            &depthAttachmentRef;
 
 
         /*
@@ -291,6 +336,13 @@ namespace Daybreak
 
         */
 
+        VkAttachmentDescription attachments[] =
+        {
+            colorAttachment,
+            depthAttachment
+        };
+
+
         VkRenderPassCreateInfo renderPassInfo{};
 
 
@@ -299,10 +351,10 @@ namespace Daybreak
 
 
         // Attachment数量
-        renderPassInfo.attachmentCount = 1;
+        renderPassInfo.attachmentCount = 2;
 
         renderPassInfo.pAttachments =
-            &colorAttachment;
+            attachments;
 
 
 

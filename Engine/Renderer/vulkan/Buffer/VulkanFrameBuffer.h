@@ -117,7 +117,8 @@ namespace Daybreak
             VkDevice device,
             VkRenderPass renderPass,
             const std::vector<VkImageView>& imageViews,
-            VkExtent2D extent
+            VkExtent2D extent,
+            VkImageView depthImageView
         );
 
 
@@ -170,7 +171,8 @@ namespace Daybreak
         void CreateFramebuffers(
             VkRenderPass renderPass,
             const std::vector<VkImageView>& imageViews,
-            VkExtent2D extent
+            VkExtent2D extent,
+            VkImageView depthImageView
         );
 
 

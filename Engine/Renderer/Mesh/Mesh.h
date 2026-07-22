@@ -19,7 +19,9 @@ namespace Daybreak
         );
 
 
-        static Mesh CreateTriangle();
+       // static Mesh CreateTriangle();
+
+        static Mesh CreateCube();
 
 
         const std::vector<Vertex>& GetVertices() const

@@ -10,7 +10,8 @@ namespace Daybreak
         VkDevice device,
         VkRenderPass renderPass,
         const std::vector<VkImageView>& imageViews,
-        VkExtent2D extent)
+        VkExtent2D extent,
+        VkImageView depthImageView)
     {
         /*
             保存Logical Device。
@@ -53,7 +54,8 @@ namespace Daybreak
         CreateFramebuffers(
             renderPass,
             imageViews,
-            extent
+            extent,
+            depthImageView
         );
     }
 
@@ -62,7 +64,9 @@ namespace Daybreak
     void VulkanFramebuffer::CreateFramebuffers(
         VkRenderPass renderPass,
         const std::vector<VkImageView>& imageViews,
-        VkExtent2D extent)
+        VkExtent2D extent,
+        VkImageView depthImageView
+    )
     {
         /*
             Framebuffer数量和Swapchain Image数量一致。
@@ -99,7 +103,8 @@ namespace Daybreak
             */
             VkImageView attachments[] =
             {
-                imageViews[i]
+                imageViews[i],
+                depthImageView
             };
 
 
@@ -153,7 +158,7 @@ namespace Daybreak
 
             */
             framebufferInfo.attachmentCount =
-                1;
+                2;
 
 
             framebufferInfo.pAttachments =

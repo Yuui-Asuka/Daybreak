@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "../vulkan/VulkanBuffer.h"
+#include "VulkanBuffer.h"
 
 #include <vector>
 

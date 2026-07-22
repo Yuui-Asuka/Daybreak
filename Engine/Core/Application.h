@@ -6,17 +6,19 @@
 #include <Renderer/vulkan/VulkanRenderPass.h>
 #include <Renderer/vulkan/VulkanShader.h>
 #include <Renderer/vulkan/VulkanPipeline.h>
-#include <Renderer/vulkan/VulkanFrameBuffer.h>
+#include <Renderer/vulkan/Buffer/VulkanFrameBuffer.h>
 #include <Renderer/vulkan/VulkanCommandPool.h>
-#include <Renderer/vulkan/VulkanCommandBuffer.h>
+#include <Renderer/vulkan/Buffer/VulkanCommandBuffer.h>
 #include <Renderer/vulkan/VulkanSync.h>
-#include <Renderer/vulkan/VulkanBuffer.h>
+#include <Renderer/vulkan/Buffer/VulkanBuffer.h>
 #include <Renderer/Mesh/Mesh.h>
-#include <Renderer/Buffer/VulkanIndexBuffer.h>
-#include "Renderer/Vulkan/VulkanUniformBuffer.h"
+#include <Renderer/vulkan/Buffer/VulkanIndexBuffer.h>
+#include "Renderer/Vulkan/Buffer/VulkanUniformBuffer.h"
 #include "Renderer/Vulkan/Descriptor/VulkanDescriptorSetLayout.h"
 #include "Renderer/Vulkan/Descriptor/VulkanDescriptorPool.h"
 #include "Renderer/Vulkan/Descriptor/VulkanDescriptorSet.h"
+#include "Renderer/Vulkan/Buffer/VulkanDepthBuffer.h"
+#include "Scene/Scene/CubeObject.h"
 
 
 class Application
@@ -47,7 +49,7 @@ private:
     Daybreak::VulkanDescriptorSetLayout m_DescriptorSetLayout;
     Daybreak::VulkanDescriptorPool m_DescriptorPool;
     Daybreak::VulkanDescriptorSet m_DescriptorSet;
-
+    Daybreak::VulkanDepthBuffer m_DepthBuffer;
 private:
 
     void RecreateSwapchain();

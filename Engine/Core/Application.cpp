@@ -59,7 +59,7 @@ void Application::RunVulkan()
 
     // Mesh
     Daybreak::Mesh triangle =
-        Daybreak::Mesh::CreateTriangle();
+        Daybreak::Mesh::CreateCube();
 
 
     m_VertexBuffer.Init(
@@ -112,11 +112,19 @@ void Application::RunVulkan()
         m_DescriptorSetLayout.GetLayout()
     );
 
+    m_DepthBuffer.Init(
+        m_Device.GetDevice(),
+        m_Device.GetPhysicalDevice(),
+        m_Swapchain.GetExtent()
+    );
+
+
     m_Framebuffer.Init(
         m_Device.GetDevice(),
         m_RenderPass.GetRenderPass(),
         m_Swapchain.GetImageViews(),
-        m_Swapchain.GetExtent()
+        m_Swapchain.GetExtent(),
+        m_DepthBuffer.GetImageView()
     );
 
     m_CommandPool.Init(
@@ -578,7 +586,7 @@ void Application::RecreateSwapchain()
     m_Swapchain.Shutdown();
 
     Daybreak::Mesh triangle =
-        Daybreak::Mesh::CreateTriangle();
+        Daybreak::Mesh::CreateCube();
 
     // 创建新的 Swapchain
 
@@ -607,7 +615,8 @@ void Application::RecreateSwapchain()
         m_Device.GetDevice(),
         m_RenderPass.GetRenderPass(),
         m_Swapchain.GetImageViews(),
-        m_Swapchain.GetExtent()
+        m_Swapchain.GetExtent(),
+        m_DepthBuffer.GetImageView()
     );
 
 
