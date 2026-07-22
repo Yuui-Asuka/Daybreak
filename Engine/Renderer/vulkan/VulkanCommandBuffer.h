@@ -129,9 +129,13 @@ namespace Daybreak
             VkRenderPass renderPass,
             VkExtent2D extent,
             VkPipeline pipeline,
+            VkPipelineLayout pipelineLayout,
+            VkDescriptorSet descriptorSet,
             const std::vector<VkFramebuffer>& framebuffers,
             VkBuffer vertexBuffer,
-            uint32_t vertexCount
+            uint32_t vertexCount,
+            VkBuffer indexBuffer,
+            uint32_t indexCount
         );
 
 
@@ -224,9 +228,13 @@ namespace Daybreak
             VkRenderPass renderPass,
             VkExtent2D extent,
             VkPipeline pipeline,
+            VkPipelineLayout pipelineLayout,
+            VkDescriptorSet descriptorSet,
             const std::vector<VkFramebuffer>& framebuffers,
             VkBuffer vertexBuffer,
-            uint32_t vertexCount
+            uint32_t vertexCount,
+            VkBuffer indexBuffer,
+            uint32_t indexCount
         );
 
 
@@ -240,7 +248,11 @@ namespace Daybreak
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
+        VkBuffer m_IndexBuffer =
+            VK_NULL_HANDLE;
 
+
+        uint32_t m_IndexCount = 0;
 
         /*
             Command Buffer集合。

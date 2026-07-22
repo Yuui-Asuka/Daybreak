@@ -12,6 +12,12 @@
 #include <Renderer/vulkan/VulkanSync.h>
 #include <Renderer/vulkan/VulkanBuffer.h>
 #include <Renderer/Mesh/Mesh.h>
+#include <Renderer/Buffer/VulkanIndexBuffer.h>
+#include "Renderer/Vulkan/VulkanUniformBuffer.h"
+#include "Renderer/Vulkan/Descriptor/VulkanDescriptorSetLayout.h"
+#include "Renderer/Vulkan/Descriptor/VulkanDescriptorPool.h"
+#include "Renderer/Vulkan/Descriptor/VulkanDescriptorSet.h"
+
 
 class Application
 {
@@ -36,6 +42,11 @@ private:
     Daybreak::VulkanSync m_Sync;
     Daybreak::VulkanBuffer m_VertexBuffer;
     Daybreak::Mesh m_TestMesh;
+    Daybreak::VulkanIndexBuffer m_VulkanIndexBuffer;
+    Daybreak::VulkanUniformBuffer m_UniformBuffer;
+    Daybreak::VulkanDescriptorSetLayout m_DescriptorSetLayout;
+    Daybreak::VulkanDescriptorPool m_DescriptorPool;
+    Daybreak::VulkanDescriptorSet m_DescriptorSet;
 
 private:
 

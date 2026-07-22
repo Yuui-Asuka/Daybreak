@@ -1,0 +1,4 @@
+.vs/
+ThirdParty/
+vcpkg_installed/
+build/

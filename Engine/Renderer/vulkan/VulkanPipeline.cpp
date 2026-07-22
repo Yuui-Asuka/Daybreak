@@ -12,26 +12,33 @@ namespace Daybreak
         VkDevice device,
         VkExtent2D extent,
         VkRenderPass renderPass,
-        VkShaderModule vertShader,
-        VkShaderModule fragShader)
+        VkShaderModule vertexShader,
+        VkShaderModule fragmentShader,
+        VkDescriptorSetLayout descriptorSetLayout
+    )
     {
         // 保存 Vulkan Logical Device
         m_Device = device;
 
         CreatePipeline(
+            device,
             extent,
             renderPass,
-            vertShader,
-            fragShader
+            vertexShader,
+            fragmentShader,
+            descriptorSetLayout
         );
     }
 
 
     void VulkanPipeline::CreatePipeline(
+        VkDevice device,
         VkExtent2D extent,
         VkRenderPass renderPass,
-        VkShaderModule vertShader,
-        VkShaderModule fragShader)
+        VkShaderModule vertexShader,
+        VkShaderModule fragmentShader,
+        VkDescriptorSetLayout descriptorSetLayout
+    )
     {
 
         /*
@@ -58,7 +65,7 @@ namespace Daybreak
             VK_SHADER_STAGE_VERTEX_BIT;
 
         vertStage.module =
-            vertShader;
+            vertexShader;
 
         vertStage.pName =
             "main";
@@ -73,7 +80,7 @@ namespace Daybreak
             VK_SHADER_STAGE_FRAGMENT_BIT;
 
         fragStage.module =
-            fragShader;
+            fragmentShader;
 
         fragStage.pName =
             "main";
@@ -267,7 +274,7 @@ namespace Daybreak
             1.0f;
 
         rasterizer.cullMode =
-            VK_CULL_MODE_BACK_BIT;
+            VK_CULL_MODE_NONE;
 
         rasterizer.frontFace =
             VK_FRONT_FACE_CLOCKWISE;
@@ -356,12 +363,21 @@ namespace Daybreak
 
         VkPipelineLayoutCreateInfo layoutInfo{};
 
+
         layoutInfo.sType =
             VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
 
+        layoutInfo.setLayoutCount = 1;
+
+
+        layoutInfo.pSetLayouts =
+            &descriptorSetLayout;
+
+
+
         if (vkCreatePipelineLayout(
-            m_Device,
+            device,
             &layoutInfo,
             nullptr,
             &m_PipelineLayout)

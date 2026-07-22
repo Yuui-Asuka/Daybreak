@@ -1,17 +1,18 @@
 #include "VulkanBuffer.h"
 
 #include <stdexcept>
-#include <iostream>
-#include <Renderer/Mesh/Vertex.h>
+#include <cstring>
 
 
 namespace Daybreak
 {
 
+
     void VulkanBuffer::Init(
         VkDevice device,
         VkPhysicalDevice physicalDevice,
-        const std::vector<Vertex>& vertices)
+        VkDeviceSize size,
+        VkBufferUsageFlags usage)
     {
         m_Device = device;
 
@@ -19,24 +20,23 @@ namespace Daybreak
             physicalDevice;
 
 
-        VkDeviceSize size =
-            sizeof(Vertex) *
-            vertices.size();
-
-
         VkBufferCreateInfo bufferInfo{};
 
         bufferInfo.sType =
             VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 
+
         bufferInfo.size =
             size;
 
+
         bufferInfo.usage =
-            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+            usage;
+
 
         bufferInfo.sharingMode =
             VK_SHARING_MODE_EXCLUSIVE;
+
 
 
         if (vkCreateBuffer(
@@ -52,7 +52,9 @@ namespace Daybreak
         }
 
 
+
         VkMemoryRequirements requirements{};
+
 
         vkGetBufferMemoryRequirements(
             m_Device,
@@ -61,13 +63,17 @@ namespace Daybreak
         );
 
 
+
         VkMemoryAllocateInfo allocateInfo{};
+
 
         allocateInfo.sType =
             VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
+
         allocateInfo.allocationSize =
             requirements.size;
+
 
 
         allocateInfo.memoryTypeIndex =
@@ -78,12 +84,19 @@ namespace Daybreak
             );
 
 
-        vkAllocateMemory(
+
+        if (vkAllocateMemory(
             m_Device,
             &allocateInfo,
             nullptr,
-            &m_Memory
-        );
+            &m_Memory)
+            != VK_SUCCESS)
+        {
+            throw std::runtime_error(
+                "Failed to allocate buffer memory!"
+            );
+        }
+
 
 
         vkBindBufferMemory(
@@ -93,8 +106,15 @@ namespace Daybreak
             0
         );
 
+    }
 
-        void* data;
+
+
+    void VulkanBuffer::Upload(
+        const void* data,
+        VkDeviceSize size)
+    {
+        void* mapped = nullptr;
 
 
         vkMapMemory(
@@ -103,13 +123,13 @@ namespace Daybreak
             0,
             size,
             0,
-            &data
+            &mapped
         );
 
 
         memcpy(
+            mapped,
             data,
-            vertices.data(),
             size
         );
 
@@ -119,6 +139,7 @@ namespace Daybreak
             m_Memory
         );
     }
+
 
 
 
@@ -142,30 +163,6 @@ namespace Daybreak
             i++)
         {
 
-            /*
-             判断：
-
-             1.
-             这个 Memory Type 是否支持
-
-             2.
-             是否满足需要的属性
-
-
-             例如：
-
-             Vertex Buffer 上传阶段：
-
-             HOST_VISIBLE
-             HOST_COHERENT
-
-
-             GPU最终使用：
-
-             DEVICE_LOCAL
-
-            */
-
             if ((typeFilter & (1 << i)) &&
                 (memoryProperties.memoryTypes[i].propertyFlags
                     & properties)
@@ -185,16 +182,20 @@ namespace Daybreak
 
 
 
+
+
     void VulkanBuffer::Shutdown()
     {
 
         if (m_Buffer != VK_NULL_HANDLE)
         {
+
             vkDestroyBuffer(
                 m_Device,
                 m_Buffer,
                 nullptr
             );
+
 
             m_Buffer =
                 VK_NULL_HANDLE;
@@ -204,16 +205,19 @@ namespace Daybreak
 
         if (m_Memory != VK_NULL_HANDLE)
         {
+
             vkFreeMemory(
                 m_Device,
                 m_Memory,
                 nullptr
             );
 
+
             m_Memory =
                 VK_NULL_HANDLE;
         }
 
     }
+
 
 }

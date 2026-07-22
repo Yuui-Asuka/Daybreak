@@ -1,26 +1,21 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include "../Mesh/Vertex.h"
-#include <vector>
+#include <cstdint>
+
 namespace Daybreak
 {
 
     /**
      * @brief Vulkan Buffer 封装类
      *
-     * 用于管理 GPU Buffer。
+     * 通用 GPU Buffer
      *
-     * Buffer 用途包括：
+     * 支持:
      *
-     * Vertex Buffer:
-     *     保存顶点数据
-     *
-     * Index Buffer:
-     *     保存索引数据
-     *
-     * Uniform Buffer:
-     *     保存 shader 参数
+     * Vertex Buffer
+     * Index Buffer
+     * Uniform Buffer
      *
      */
     class VulkanBuffer
@@ -30,34 +25,36 @@ namespace Daybreak
         /**
          * @brief 创建 Vulkan Buffer
          *
+         * @param size Buffer 大小
+         * @param usage Buffer用途
          */
         void Init(
             VkDevice device,
             VkPhysicalDevice physicalDevice,
-            const std::vector<Vertex>& vertices
+            VkDeviceSize size,
+            VkBufferUsageFlags usage
+        );
+
+
+        /**
+         * @brief 上传 CPU 数据到 GPU
+         *
+         */
+        void Upload(
+            const void* data,
+            VkDeviceSize size
         );
 
 
         /**
          * @brief 销毁 Buffer
-         *
-         * 释放：
-         *
-         * VkBuffer
-         *
-         * VkDeviceMemory
          */
         void Shutdown();
 
 
+
         /**
-         * @brief 获取 Vulkan Buffer
-         *
-         * 用于：
-         *
-         * vkCmdBindVertexBuffers()
-         *
-         * vkCmdBindIndexBuffer()
+         * @brief 获取 VkBuffer
          */
         VkBuffer GetBuffer() const
         {
@@ -66,7 +63,7 @@ namespace Daybreak
 
 
         /**
-         * @brief 获取 Buffer Memory
+         * @brief 获取 Memory
          */
         VkDeviceMemory GetMemory() const
         {
@@ -74,19 +71,12 @@ namespace Daybreak
         }
 
 
+
     private:
 
+
         /**
-         * @brief 查找合适的 GPU Memory 类型
-         *
-         * Vulkan GPU 有不同类型显存：
-         *
-         * Device Local:
-         *     GPU高速显存
-         *
-         * Host Visible:
-         *     CPU可以访问
-         *
+         * @brief 查找 Memory 类型
          */
         uint32_t FindMemoryType(
             uint32_t typeFilter,
@@ -94,37 +84,26 @@ namespace Daybreak
         );
 
 
+
     private:
 
-        /**
-         * @brief Vulkan Logical Device
-         */
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
 
-        /**
-         * @brief Vulkan Buffer
-         */
+        VkPhysicalDevice m_PhysicalDevice =
+            VK_NULL_HANDLE;
+
+
         VkBuffer m_Buffer =
             VK_NULL_HANDLE;
 
 
-        /**
-         * @brief Buffer 对应显存
-         */
         VkDeviceMemory m_Memory =
             VK_NULL_HANDLE;
 
 
-        /**
-         * @brief Physical Device
-         *
-         * 用于查询 GPU Memory 类型
-         */
-        VkPhysicalDevice m_PhysicalDevice =
-            VK_NULL_HANDLE;
-
     };
+
 
 }

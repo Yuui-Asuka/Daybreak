@@ -14,7 +14,8 @@ namespace Daybreak
         Mesh() = default;
 
         Mesh(
-            const std::vector<Vertex>& vertices
+            const std::vector<Vertex>& vertices,
+            const std::vector<uint32_t>& indices
         );
 
 
@@ -26,6 +27,10 @@ namespace Daybreak
             return m_Vertices;
         }
 
+        const std::vector<uint32_t>& GetIndices() const
+        {
+            return m_Indices;
+        }
 
         uint32_t GetVertexCount() const
         {
@@ -34,11 +39,16 @@ namespace Daybreak
                 );
         }
 
+        uint32_t GetIndexCount() const
+        {
+            return static_cast<uint32_t>(m_Indices.size());
+        }
 
     private:
 
         std::vector<Vertex> m_Vertices;
 
+        std::vector<uint32_t> m_Indices;
     };
 
 }

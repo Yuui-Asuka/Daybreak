@@ -11,9 +11,13 @@ namespace Daybreak
         VkRenderPass renderPass,
         VkExtent2D extent,
         VkPipeline pipeline,
+        VkPipelineLayout pipelineLayout,
+        VkDescriptorSet descriptorSet,
         const std::vector<VkFramebuffer>& framebuffers,
         VkBuffer vertexBuffer,
-        uint32_t vertexCount)
+        uint32_t vertexCount,
+        VkBuffer indexBuffer,
+        uint32_t indexCount)
     {
 
         /*
@@ -68,9 +72,13 @@ namespace Daybreak
             renderPass,
             extent,
             pipeline,
+            pipelineLayout,
+            descriptorSet,
             framebuffers,
             vertexBuffer,
-            vertexCount
+            vertexCount,
+            indexBuffer,
+            indexCount
         );
     }
 
@@ -162,9 +170,13 @@ namespace Daybreak
         VkRenderPass renderPass,
         VkExtent2D extent,
         VkPipeline pipeline,
+        VkPipelineLayout pipelineLayout,
+        VkDescriptorSet descriptorSet,
         const std::vector<VkFramebuffer>& framebuffers,
         VkBuffer vertexBuffer,
-        uint32_t vertexCount)
+        uint32_t vertexCount,
+        VkBuffer indexBuffer,
+        uint32_t indexCount)
     {
         /*
             遍历每一个Command Buffer。
@@ -347,6 +359,17 @@ namespace Daybreak
                 pipeline
             );
 
+            vkCmdBindDescriptorSets(
+                m_CommandBuffers[i],
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                0,
+                1,
+                &descriptorSet,
+                0,
+                nullptr
+            );
+
             VkBuffer vertexBuffers[] =
             {
                 vertexBuffer
@@ -365,48 +388,21 @@ namespace Daybreak
                 offsets
             );
 
-
-
-            /*
-                绘制三角形。
-
-
-                参数：
-
-                    vertexCount:
-
-                        3个顶点
-
-
-                    instanceCount:
-
-                        1个实例
-
-
-                    firstVertex:
-
-                        从第0个Vertex开始
-
-
-                    firstInstance:
-
-                        第0个Instance
-
-
-                当前没有Vertex Buffer。
-
-                顶点数据来自Vertex Shader。
-
-            */
-            vkCmdDraw(
+            vkCmdBindIndexBuffer(
                 m_CommandBuffers[i],
-                vertexCount,
+                indexBuffer,
+                0,
+                VK_INDEX_TYPE_UINT32
+            );
+
+            vkCmdDrawIndexed(
+                m_CommandBuffers[i],
+                indexCount,
                 1,
+                0,
                 0,
                 0
             );
-
-
 
             /*
                 结束RenderPass。

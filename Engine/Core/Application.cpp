@@ -1,7 +1,10 @@
 #include "Application.h"
 #include "Renderer/Renderer.h"
 #include "../Renderer/Vulkan/VulkanContext.h"
+#include "Renderer/Mesh/Vertex.h"
+#include "../Renderer/UBO/UniformBufferObject.h"
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -62,16 +65,51 @@ void Application::RunVulkan()
     m_VertexBuffer.Init(
         m_Device.GetDevice(),
         m_Device.GetPhysicalDevice(),
-        triangle.GetVertices()
+        sizeof(Daybreak::Vertex) * triangle.GetVertices().size(),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
     );
 
+
+    m_VertexBuffer.Upload(
+        triangle.GetVertices().data(),
+        sizeof(Daybreak::Vertex) * triangle.GetVertices().size()
+    );
+
+    m_UniformBuffer.Init(
+        m_Device.GetDevice(),
+        m_Device.GetPhysicalDevice(),
+        sizeof(Daybreak::UniformBufferObject)
+    );
+
+    m_VulkanIndexBuffer.Init(
+        m_Device.GetDevice(),
+        m_Device.GetPhysicalDevice(),
+        triangle.GetIndices()
+    );
+
+    m_DescriptorSetLayout.Init(
+        m_Device.GetDevice()
+    );
+
+    m_DescriptorPool.Init(
+        m_Device.GetDevice()
+    );
+
+    m_DescriptorSet.Init(
+        m_Device.GetDevice(),
+        m_DescriptorPool.GetPool(),
+        m_DescriptorSetLayout.GetLayout(),
+        m_UniformBuffer.GetBuffer(),
+        sizeof(Daybreak::UniformBufferObject)
+    );
 
     m_Pipeline.Init(
         m_Device.GetDevice(),
         m_Swapchain.GetExtent(),
         m_RenderPass.GetRenderPass(),
         m_Shader.GetVertexShader(),
-        m_Shader.GetFragmentShader()
+        m_Shader.GetFragmentShader(),
+        m_DescriptorSetLayout.GetLayout()
     );
 
     m_Framebuffer.Init(
@@ -87,15 +125,32 @@ void Application::RunVulkan()
     );
 
     m_CommandBuffer.Init(
-        m_Device.GetDevice(),
-        m_CommandPool.GetCommandPool(),
-        m_RenderPass.GetRenderPass(),
-        m_Swapchain.GetExtent(),
-        m_Pipeline.GetPipeline(),
-        m_Framebuffer.GetFramebuffers(),
-        m_VertexBuffer.GetBuffer(),
-        triangle.GetVertexCount()
-    );
+    m_Device.GetDevice(),
+
+    m_CommandPool.GetCommandPool(),
+
+    m_RenderPass.GetRenderPass(),
+
+    m_Swapchain.GetExtent(),
+
+    m_Pipeline.GetPipeline(),
+
+    // 新增
+    m_Pipeline.GetPipelineLayout(),
+
+    // 新增
+    m_DescriptorSet.GetDescriptorSet(),
+
+    m_Framebuffer.GetFramebuffers(),
+
+    m_VertexBuffer.GetBuffer(),
+
+    triangle.GetVertexCount(),
+
+    m_VulkanIndexBuffer.GetBuffer(),
+
+    triangle.GetIndexCount()
+);
 
     m_Sync.Init(
         m_Device.GetDevice()
@@ -114,9 +169,19 @@ void Application::RunVulkan()
 
     m_CommandPool.Shutdown();
 
+    m_VulkanIndexBuffer.Shutdown();
+
     m_VertexBuffer.Shutdown();
 
+    m_UniformBuffer.Shutdown();
+
     m_Framebuffer.Shutdown();
+
+    m_DescriptorPool.Shutdown();
+
+    m_DescriptorSetLayout.Shutdown();
+
+    m_DescriptorSet.Shutdown();
 
     m_Pipeline.Shutdown();
 
@@ -147,6 +212,8 @@ void Application::DrawFrame()
     {
         return;
     }
+
+   
 
     /*
         等待上一帧GPU执行完成。
@@ -186,6 +253,43 @@ void Application::DrawFrame()
         &inFlightFence
     );
 
+
+    // ==========================
+   // 更新 Uniform Buffer
+   // ==========================
+
+    Daybreak::UniformBufferObject ubo{};
+
+
+    ubo.model =
+        glm::mat4(1.0f);
+
+
+    ubo.view =
+        glm::lookAt(
+            glm::vec3(0, 0, 3),
+            glm::vec3(0, 0, 0),
+            glm::vec3(0, 1, 0)
+        );
+
+
+    ubo.projection =
+        glm::perspective(
+            glm::radians(45.0f),
+            1280.0f / 720.0f,
+            0.1f,
+            100.0f
+        );
+
+
+    ubo.projection[1][1] *= -1;
+
+
+
+    m_UniformBuffer.Upload(
+        &ubo,
+        sizeof(ubo)
+    );
 
     /*
         从Swapchain获取一张可绘制Image。
@@ -493,7 +597,8 @@ void Application::RecreateSwapchain()
         m_Swapchain.GetExtent(),
         m_RenderPass.GetRenderPass(),
         m_Shader.GetVertexShader(),
-        m_Shader.GetFragmentShader()
+        m_Shader.GetFragmentShader(),
+        m_DescriptorSetLayout.GetLayout()
     );
 
 
@@ -513,9 +618,13 @@ void Application::RecreateSwapchain()
         m_RenderPass.GetRenderPass(),
         m_Swapchain.GetExtent(),
         m_Pipeline.GetPipeline(),
+        m_Pipeline.GetPipelineLayout(),
+        m_DescriptorSet.GetDescriptorSet(),
         m_Framebuffer.GetFramebuffers(),
         m_VertexBuffer.GetBuffer(),
-        triangle.GetVertexCount()
+        triangle.GetVertexCount(),
+        m_VulkanIndexBuffer.GetBuffer(),
+        triangle.GetIndexCount()
     );
 }
 

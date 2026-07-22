@@ -48,8 +48,9 @@ namespace Daybreak
             VkDevice device,
             VkExtent2D extent,
             VkRenderPass renderPass,
-            VkShaderModule vertShader,
-            VkShaderModule fragShader
+            VkShaderModule vertexShader,
+            VkShaderModule fragmentShader,
+            VkDescriptorSetLayout descriptorSetLayout
         );
 
         /*
@@ -89,10 +90,12 @@ namespace Daybreak
             - Color Blend
         */
         void CreatePipeline(
+            VkDevice device,
             VkExtent2D extent,
             VkRenderPass renderPass,
-            VkShaderModule vertShader,
-            VkShaderModule fragShader
+            VkShaderModule vertexShader,
+            VkShaderModule fragmentShader,
+            VkDescriptorSetLayout descriptorSetLayout
         );
 
     private:
