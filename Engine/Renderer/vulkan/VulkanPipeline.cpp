@@ -273,12 +273,41 @@ namespace Daybreak
         rasterizer.lineWidth =
             1.0f;
 
+        //rasterizer.cullMode =
+        //    VK_CULL_MODE_NONE;
+
         rasterizer.cullMode =
-            VK_CULL_MODE_NONE;
+            VK_CULL_MODE_BACK_BIT;
 
         rasterizer.frontFace =
             VK_FRONT_FACE_CLOCKWISE;
 
+
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+
+
+        depthStencil.sType =
+            VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+
+        depthStencil.depthTestEnable =
+            VK_TRUE;
+
+
+        depthStencil.depthWriteEnable =
+            VK_TRUE;
+
+
+        depthStencil.depthCompareOp =
+            VK_COMPARE_OP_LESS;
+
+
+        depthStencil.depthBoundsTestEnable =
+            VK_FALSE;
+
+
+        depthStencil.stencilTestEnable =
+            VK_FALSE;
 
 
         /*
@@ -423,6 +452,9 @@ namespace Daybreak
 
         pipelineInfo.pMultisampleState =
             &multisampling;
+
+        pipelineInfo.pDepthStencilState =
+            &depthStencil;
 
         pipelineInfo.pColorBlendState =
             &colorBlending;

@@ -3,6 +3,7 @@
 #include "../Renderer/Vulkan/VulkanContext.h"
 #include "Renderer/Mesh/Vertex.h"
 #include "../Renderer/UBO/UniformBufferObject.h"
+#include "Input/Input.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
@@ -12,8 +13,14 @@
 
 
 Application::Application()
-    : m_Window(1280, 720, "Daybreak")
+    :
+    m_Window(1280, 720, "Daybreak"),
+    m_CameraController(m_Camera)
+
 {
+    Daybreak::Input::Init(
+        m_Window.GetNativeWindow()
+    );
 }
 
 void Application::RunVulkan()
@@ -134,31 +141,30 @@ void Application::RunVulkan()
 
     m_CommandBuffer.Init(
     m_Device.GetDevice(),
-
     m_CommandPool.GetCommandPool(),
-
     m_RenderPass.GetRenderPass(),
-
     m_Swapchain.GetExtent(),
-
     m_Pipeline.GetPipeline(),
-
-    // 新增
     m_Pipeline.GetPipelineLayout(),
-
-    // 新增
     m_DescriptorSet.GetDescriptorSet(),
-
     m_Framebuffer.GetFramebuffers(),
-
     m_VertexBuffer.GetBuffer(),
-
     triangle.GetVertexCount(),
-
     m_VulkanIndexBuffer.GetBuffer(),
-
     triangle.GetIndexCount()
 );
+
+    m_Camera.SetPosition({ 0,0,5 });
+
+    m_Camera.ProcessKeyboard(
+        0,
+        0.016f
+    );
+
+    m_Camera.ProcessMouseMovement(
+        45,
+        -20
+    );
 
     m_Sync.Init(
         m_Device.GetDevice()
@@ -168,6 +174,14 @@ void Application::RunVulkan()
     while (!glfwWindowShouldClose(m_Window.GetNativeWindow()))
     {
         glfwPollEvents();
+
+        float deltaTime = 0.016f;
+
+
+        m_CameraController.Update(
+            deltaTime
+        );
+
         DrawFrame();
     }
 
@@ -274,20 +288,54 @@ void Application::DrawFrame()
 
 
     ubo.view =
-        glm::lookAt(
-            glm::vec3(0, 0, 3),
-            glm::vec3(0, 0, 0),
-            glm::vec3(0, 1, 0)
-        );
+        m_Camera.GetViewMatrix();
 
 
     ubo.projection =
-        glm::perspective(
-            glm::radians(45.0f),
-            1280.0f / 720.0f,
-            0.1f,
-            100.0f
-        );
+        m_Camera.GetProjectionMatrix();
+
+
+
+    m_UniformBuffer.Upload(
+        &ubo,
+        sizeof(ubo)
+    );
+
+   // ubo.view = m_Camera.GetViewMatrix();
+
+    //glm::vec3 cameraPos = { 3.0f, 3.0f, 3.0f };
+
+    //glm::vec3 target = { 0.0f, 0.0f, 0.0f };
+
+    //glm::vec3 up = { 0.0f, 1.0f, 0.0f };
+
+    //ubo.view = glm::lookAt(
+    //    cameraPos,
+    //    target,
+    //    up
+    //);
+
+   // ubo.projection = m_Camera.GetProjectionMatrix();
+
+    //ubo.model =
+    //    glm::mat4(1.0f);
+
+
+    //ubo.view =
+    //    glm::lookAt(
+    //        glm::vec3(2.0f, 2.0f, 3.0f),
+    //        glm::vec3(0, 0, 0),
+    //        glm::vec3(0, 1, 0)
+    //    );
+
+
+    //ubo.projection =
+    //    glm::perspective(
+    //        glm::radians(45.0f),
+    //        1280.0f / 720.0f,
+    //        0.1f,
+    //        100.0f
+    //    );
 
 
     ubo.projection[1][1] *= -1;

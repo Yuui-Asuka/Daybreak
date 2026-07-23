@@ -86,20 +86,6 @@ namespace Daybreak
             /*
                 Framebuffer Attachment列表。
 
-
-                当前只有一个Attachment：
-
-                    Color Attachment
-
-
-                后面加入Depth后：
-
-                    VkImageView attachments[]
-                    {
-                        colorView,
-                        depthView
-                    };
-
             */
             VkImageView attachments[] =
             {

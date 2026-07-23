@@ -22,6 +22,9 @@ add_library(Engine STATIC
     Renderer/vulkan/Descriptor/VulkanDescriptorSet.cpp
     Renderer/vulkan/Descriptor/VulkanDescriptorSetLayout.cpp
     Renderer/vulkan/Buffer/VulkanIndexBuffer.cpp
+    Scene/Camera/Camera.cpp
+    Input/Input.cpp
+    Scene/Camera/CameraController.cpp
  "Window/Window.h" 
  "Window/Window.cpp" 
  "Renderer/opengl/OpenglRenderer.cpp" 
@@ -50,7 +53,7 @@ add_library(Engine STATIC
  "Renderer/vulkan/Buffer/VulkanUniformBuffer.cpp" 
  "Renderer/vulkan/Descriptor/VulkanDescriptorSetLayout.h" 
  "Renderer/vulkan/Descriptor/VulkanDescriptorSetLayout.cpp" 
- "Renderer/vulkan/Descriptor/VulkanDescriptorPool.cpp" "Renderer/vulkan/Buffer/VulkanDepthBuffer.h" "Renderer/vulkan/Buffer/VulkanDepthBuffer.cpp" "Core/Camera/Camera.cpp" "Core/Camera/Camera.h" "Scene/Scene/CubeObject.h")
+ "Renderer/vulkan/Descriptor/VulkanDescriptorPool.cpp" "Renderer/vulkan/Buffer/VulkanDepthBuffer.h" "Renderer/vulkan/Buffer/VulkanDepthBuffer.cpp" "Scene/Scene/CubeObject.h" "Input/Input.h" "Input/Input.cpp")
 
 # 对外公开头文件目录
 target_include_directories(Engine PUBLIC

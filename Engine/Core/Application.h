@@ -19,6 +19,8 @@
 #include "Renderer/Vulkan/Descriptor/VulkanDescriptorSet.h"
 #include "Renderer/Vulkan/Buffer/VulkanDepthBuffer.h"
 #include "Scene/Scene/CubeObject.h"
+#include "Scene/Camera/Camera.h"
+#include "Scene/Camera/CameraController.h"
 
 
 class Application
@@ -50,6 +52,9 @@ private:
     Daybreak::VulkanDescriptorPool m_DescriptorPool;
     Daybreak::VulkanDescriptorSet m_DescriptorSet;
     Daybreak::VulkanDepthBuffer m_DepthBuffer;
+    Daybreak::Camera m_Camera;
+    Daybreak::CameraController m_CameraController;
+
 private:
 
     void RecreateSwapchain();

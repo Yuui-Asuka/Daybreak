@@ -1,11 +1,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 
 namespace Daybreak
 {
+
 
     class Camera
     {
@@ -17,7 +17,6 @@ namespace Daybreak
 
         glm::mat4 GetViewMatrix() const;
 
-
         glm::mat4 GetProjectionMatrix() const;
 
 
@@ -27,18 +26,40 @@ namespace Daybreak
         );
 
 
-        glm::vec3 GetPosition() const
-        {
-            return m_Position;
-        }
+        void ProcessMouseMovement(
+            float deltaX,
+            float deltaY
+        );
+
+
+        void ProcessKeyboard(
+            int direction,
+            float deltaTime
+        );
+
 
 
     private:
 
+
         glm::vec3 m_Position;
 
 
-        glm::vec3 m_Rotation;
+        glm::vec3 m_Front;
+
+
+        glm::vec3 m_Up;
+
+
+        glm::vec3 m_Right;
+
+
+
+        float m_Yaw;
+
+
+        float m_Pitch;
+
 
 
         float m_FOV;
@@ -51,6 +72,13 @@ namespace Daybreak
 
 
         float m_Far;
+
+
+
+    private:
+
+
+        void UpdateVectors();
 
     };
 

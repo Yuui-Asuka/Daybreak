@@ -238,10 +238,24 @@ namespace Daybreak
                         1.0
 
             */
-            VkClearValue clearColor{};
+            //VkClearValue clearColor{};
 
 
-            clearColor.color =
+            //clearColor.color =
+            //{
+            //    {
+            //        0.1f,
+            //        0.1f,
+            //        0.15f,
+            //        1.0f
+            //    }
+            //};
+
+            VkClearValue clearValues[2];
+
+
+            // 颜色
+            clearValues[0].color =
             {
                 {
                     0.1f,
@@ -252,6 +266,12 @@ namespace Daybreak
             };
 
 
+            // 深度
+            clearValues[1].depthStencil =
+            {
+                1.0f,
+                0
+            };
 
             /*
                 RenderPass开始信息。
@@ -313,11 +333,11 @@ namespace Daybreak
 
             */
             renderPassInfo.clearValueCount =
-                1;
+                2;
 
 
             renderPassInfo.pClearValues =
-                &clearColor;
+                clearValues;
 
 
 
