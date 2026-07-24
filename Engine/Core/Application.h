@@ -21,6 +21,7 @@
 #include "Scene/Scene/CubeObject.h"
 #include "Scene/Camera/Camera.h"
 #include "Scene/Camera/CameraController.h"
+#include "Renderer/Texture/VulkanTexture.h"
 
 
 class Application
@@ -54,6 +55,7 @@ private:
     Daybreak::VulkanDepthBuffer m_DepthBuffer;
     Daybreak::Camera m_Camera;
     Daybreak::CameraController m_CameraController;
+    Daybreak::VulkanTexture m_Texture;
 
 private:
 

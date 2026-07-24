@@ -1,6 +1,7 @@
 #include "VulkanDescriptorSet.h"
 
 #include <stdexcept>
+#include<iostream>
 
 
 namespace Daybreak
@@ -12,7 +13,8 @@ namespace Daybreak
         VkDescriptorPool descriptorPool,
         VkDescriptorSetLayout layout,
         VkBuffer uniformBuffer,
-        VkDeviceSize bufferSize
+        VkDeviceSize bufferSize,
+        const VkDescriptorImageInfo& textureInfo
     )
     {
 
@@ -129,10 +131,64 @@ namespace Daybreak
 
 
 
+        VkWriteDescriptorSet textureWrite{};
+
+
+        textureWrite.sType =
+            VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+
+
+        textureWrite.pNext =
+            nullptr;
+
+
+        textureWrite.dstSet =
+            m_DescriptorSet;
+
+
+        textureWrite.dstBinding =
+            1;
+
+
+        textureWrite.dstArrayElement =
+            0;
+
+
+        textureWrite.descriptorType =
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+
+        textureWrite.descriptorCount =
+            1;
+
+
+        textureWrite.pImageInfo =
+            &textureInfo;
+
+
+        VkWriteDescriptorSet writes[] =
+        {
+            descriptorWrite,
+            textureWrite
+        };
+
+
+        std::cout
+            << "ImageView: "
+            << textureInfo.imageView
+            << std::endl;
+
+
+        std::cout
+            << "Sampler: "
+            << textureInfo.sampler
+            << std::endl;
+
+
         vkUpdateDescriptorSets(
             device,
-            1,
-            &descriptorWrite,
+            2,
+            writes,
             0,
             nullptr
         );

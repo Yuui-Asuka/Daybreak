@@ -415,6 +415,13 @@ namespace Daybreak
                 VK_INDEX_TYPE_UINT32
             );
 
+            std::cout << "Pipeline      = " << pipeline << std::endl;
+            std::cout << "PipelineLayout= " << pipelineLayout << std::endl;
+            std::cout << "DescriptorSet = " << descriptorSet << std::endl;
+            std::cout << "VertexBuffer  = " << vertexBuffer << std::endl;
+            std::cout << "IndexBuffer   = " << indexBuffer << std::endl;
+            std::cout << "IndexCount    = " << indexCount << std::endl;
+
             vkCmdDrawIndexed(
                 m_CommandBuffers[i],
                 indexCount,

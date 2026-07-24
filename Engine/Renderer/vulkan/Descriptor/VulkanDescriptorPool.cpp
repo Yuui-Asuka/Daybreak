@@ -24,23 +24,41 @@ namespace Daybreak
 
         */
 
-        VkDescriptorPoolSize poolSize{};
+       // VkDescriptorPoolSize poolSize{};
 
 
-        poolSize.type =
+        //poolSize.type =
+        //    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+
+        ///*
+        //    可以创建多少个 DescriptorSet。
+
+        //    现在只有一个 UBO。
+
+        //    所以先设置 1。
+
+        //*/
+
+        //poolSize.descriptorCount = 1;
+
+
+        VkDescriptorPoolSize poolSizes[2];
+
+
+        poolSizes[0].type =
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
+        poolSizes[0].descriptorCount =
+            1;
 
-        /*
-            可以创建多少个 DescriptorSet。
 
-            现在只有一个 UBO。
 
-            所以先设置 1。
+        poolSizes[1].type =
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
-        */
-
-        poolSize.descriptorCount = 1;
+        poolSizes[1].descriptorCount =
+            1;
 
 
 
@@ -52,11 +70,11 @@ namespace Daybreak
 
 
 
-        poolInfo.poolSizeCount = 1;
+        poolInfo.poolSizeCount = 2;
 
 
         poolInfo.pPoolSizes =
-            &poolSize;
+            poolSizes;
 
 
 

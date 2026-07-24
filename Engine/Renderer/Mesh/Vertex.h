@@ -16,7 +16,7 @@ namespace Daybreak
         // 顶点颜色
         glm::vec3 Color;
 
-        // 纹理坐标（后续加载贴图会使用）
+        // 纹理坐标
         glm::vec2 TexCoord;
 
         // 返回 Vulkan 顶点绑定描述

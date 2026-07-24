@@ -52,6 +52,27 @@ namespace Daybreak
 
 
 
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+
+
+        samplerLayoutBinding.binding = 1;
+
+
+        samplerLayoutBinding.descriptorType =
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+
+        samplerLayoutBinding.descriptorCount = 1;
+
+
+        samplerLayoutBinding.stageFlags =
+            VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+        samplerLayoutBinding.pImmutableSamplers =
+            nullptr;
+
+
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
 
 
@@ -59,12 +80,19 @@ namespace Daybreak
             VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
 
+        VkDescriptorSetLayoutBinding bindings[] =
+        {
+            uboLayoutBinding,
+            samplerLayoutBinding
+        };
 
-        layoutInfo.bindingCount = 1;
+
+
+        layoutInfo.bindingCount = 2;
 
 
         layoutInfo.pBindings =
-            &uboLayoutBinding;
+            bindings;
 
 
 

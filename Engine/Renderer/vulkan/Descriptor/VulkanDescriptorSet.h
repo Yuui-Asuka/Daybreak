@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../../Texture/VulkanTexture.h"
 #include <vulkan/vulkan.h>
 
 
@@ -16,7 +16,8 @@ namespace Daybreak
             VkDescriptorPool descriptorPool,
             VkDescriptorSetLayout layout,
             VkBuffer uniformBuffer,
-            VkDeviceSize bufferSize
+            VkDeviceSize bufferSize,
+            const VkDescriptorImageInfo& textureInfo
         );
 
 
@@ -32,6 +33,8 @@ namespace Daybreak
 
 
     private:
+
+        VkDescriptorImageInfo m_TextureInfo{};
 
         VkDevice m_Device =
             VK_NULL_HANDLE;

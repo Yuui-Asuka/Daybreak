@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 
 namespace Daybreak
@@ -93,7 +94,20 @@ namespace Daybreak
         - 开启哪些 Extension
         - 开启哪些 Layer
         */
+
+        const char* validationLayers[] =
+        {
+            "VK_LAYER_KHRONOS_validation"
+        };
+
+
         VkInstanceCreateInfo createInfo{};
+
+
+        createInfo.enabledLayerCount = 1;
+
+        createInfo.ppEnabledLayerNames =
+            validationLayers;
 
         createInfo.sType =
             VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -120,6 +134,29 @@ namespace Daybreak
 
         都依赖 Instance。
         */
+
+        uint32_t layerCount = 0;
+
+        vkEnumerateInstanceLayerProperties(
+            &layerCount,
+            nullptr
+        );
+
+        std::vector<VkLayerProperties> layers(layerCount);
+
+        vkEnumerateInstanceLayerProperties(
+            &layerCount,
+            layers.data()
+        );
+
+        for (const auto& layer : layers)
+        {
+            std::cout
+                << layer.layerName
+                << std::endl;
+        }
+
+
         if (
             vkCreateInstance(
                 &createInfo,

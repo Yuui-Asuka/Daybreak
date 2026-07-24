@@ -41,6 +41,19 @@ void Application::RunVulkan()
         m_Context.GetSurface()
     );
 
+    m_CommandPool.Init(
+        m_Device.GetDevice(),
+        m_Device.GetGraphicsQueueFamily()
+    );
+
+    m_Texture.Init(
+        m_Device.GetDevice(),
+        m_Device.GetPhysicalDevice(),
+        m_CommandPool.GetCommandPool(),
+        m_Device.GetGraphicsQueue(),
+        "D:/vs/projects/Daybreak/Daybreak/Assets/Texture/test1.jpg"
+    );
+
 
     // 4. 创建 Swapchain
     m_Swapchain.Init(
@@ -109,12 +122,16 @@ void Application::RunVulkan()
         m_Device.GetDevice()
     );
 
+    VkDescriptorImageInfo textureInfo =
+        m_Texture.GetDescriptorInfo();
+
     m_DescriptorSet.Init(
         m_Device.GetDevice(),
         m_DescriptorPool.GetPool(),
         m_DescriptorSetLayout.GetLayout(),
         m_UniformBuffer.GetBuffer(),
-        sizeof(Daybreak::UniformBufferObject)
+        sizeof(Daybreak::UniformBufferObject),
+        textureInfo
     );
 
     m_Pipeline.Init(
@@ -141,10 +158,7 @@ void Application::RunVulkan()
         m_DepthBuffer.GetImageView()
     );
 
-    m_CommandPool.Init(
-        m_Device.GetDevice(),
-        m_Device.GetGraphicsQueueFamily()
-    );
+    
 
     m_CommandBuffer.Init(
     m_Device.GetDevice(),
@@ -216,6 +230,8 @@ void Application::RunVulkan()
     m_RenderPass.Shutdown();
 
     m_Swapchain.Shutdown();
+
+    m_Texture.Shutdown();
 
     m_Device.Shutdown();
 
@@ -529,17 +545,41 @@ void Application::DrawFrame()
         下一帧vkWaitForFences等待它。
 
     */
-    if (vkQueueSubmit(
-        m_Device.GetGraphicsQueue(),
-        1,
-        &submitInfo,
-        inFlightFence)
-        != VK_SUCCESS)
+
+    VkResult resultx =
+        vkQueueSubmit(
+            m_Device.GetGraphicsQueue(),
+            1,
+            &submitInfo,
+            inFlightFence
+        );
+
+
+    std::cout
+        << "vkQueueSubmit result = "
+        << resultx
+        << std::endl;
+
+
+    if (resultx != VK_SUCCESS)
     {
         throw std::runtime_error(
             "Failed to submit draw command!"
         );
     }
+
+
+    //if (vkQueueSubmit(
+    //    m_Device.GetGraphicsQueue(),
+    //    1,
+    //    &submitInfo,
+    //    inFlightFence)
+    //    != VK_SUCCESS)
+    //{
+    //    throw std::runtime_error(
+    //        "Failed to submit draw command!"
+    //    );
+    //}
     //std::cout << "Submit Done\n";
 
     /*
