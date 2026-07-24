@@ -236,6 +236,10 @@ namespace Daybreak
 
     }
 
+    void Camera::SetAspectRatio(float aspect)
+    {
+        m_Aspect = aspect;
+    }
 
 
     void Camera::SetPosition(
@@ -246,7 +250,6 @@ namespace Daybreak
             position;
 
     }
-
 
 
 }

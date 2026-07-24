@@ -19,7 +19,9 @@ namespace Daybreak
 
         glm::mat4 GetProjectionMatrix() const;
 
-
+        void SetAspectRatio(
+            float aspect
+        );
 
         void SetPosition(
             const glm::vec3& position
@@ -36,7 +38,6 @@ namespace Daybreak
             int direction,
             float deltaTime
         );
-
 
 
     private:

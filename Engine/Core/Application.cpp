@@ -49,6 +49,13 @@ void Application::RunVulkan()
         m_Window.GetNativeWindow()
     );
 
+    std::cout
+        << "New extent: "
+        << m_Swapchain.GetExtent().width
+        << " x "
+        << m_Swapchain.GetExtent().height
+        << std::endl;
+
 
     // 5. 创建 RenderPass
     m_RenderPass.Init(
@@ -156,9 +163,9 @@ void Application::RunVulkan()
 
     m_Camera.SetPosition({ 0,0,5 });
 
-    m_Camera.ProcessKeyboard(
-        0,
-        0.016f
+    m_Camera.SetAspectRatio(
+        float(m_Swapchain.GetExtent().width) /
+        float(m_Swapchain.GetExtent().height)
     );
 
     m_Camera.ProcessMouseMovement(
@@ -169,14 +176,11 @@ void Application::RunVulkan()
     m_Sync.Init(
         m_Device.GetDevice()
     );
-
+    float deltaTime = 0.001f;
 
     while (!glfwWindowShouldClose(m_Window.GetNativeWindow()))
     {
         glfwPollEvents();
-
-        float deltaTime = 0.016f;
-
 
         m_CameraController.Update(
             deltaTime
@@ -338,7 +342,7 @@ void Application::DrawFrame()
     //    );
 
 
-    ubo.projection[1][1] *= -1;
+    //ubo.projection[1][1] *= -1;
 
 
 
@@ -614,29 +618,60 @@ void Application::DrawFrame()
 void Application::RecreateSwapchain()
 {
 
+    int width = 0;
+    int height = 0;
+
+
+    glfwGetFramebufferSize(
+        m_Window.GetNativeWindow(),
+        &width,
+        &height
+    );
+
+
+    // 最小化窗口时等待
+    while (width == 0 || height == 0)
+    {
+        glfwGetFramebufferSize(
+            m_Window.GetNativeWindow(),
+            &width,
+            &height
+        );
+
+        glfwWaitEvents();
+    }
+
+
 
     vkDeviceWaitIdle(
         m_Device.GetDevice()
     );
 
 
-    // 销毁旧资源
+
+    /*
+        1. 销毁旧资源
+    */
+
 
     m_CommandBuffer.Shutdown();
 
-
     m_Framebuffer.Shutdown();
 
+    m_DepthBuffer.Shutdown();
 
     m_Pipeline.Shutdown();
 
+    m_RenderPass.Shutdown();
 
     m_Swapchain.Shutdown();
 
-    Daybreak::Mesh triangle =
-        Daybreak::Mesh::CreateCube();
 
-    // 创建新的 Swapchain
+
+    /*
+        2. 创建新的 Swapchain
+    */
+
 
     m_Swapchain.Init(
         &m_Device,
@@ -645,8 +680,26 @@ void Application::RecreateSwapchain()
     );
 
 
-    // Pipeline 依赖 viewport
-    // 所以重新创建
+    std::cout
+        << "New extent: "
+        << m_Swapchain.GetExtent().width
+        << " x "
+        << m_Swapchain.GetExtent().height
+        << std::endl;
+
+
+    /*
+        3. RenderPass
+    */
+
+
+    m_RenderPass.Shutdown();
+
+
+    m_RenderPass.Init(
+        m_Device.GetDevice(),
+        m_Swapchain.GetImageFormat()
+    );
 
     m_Pipeline.Init(
         m_Device.GetDevice(),
@@ -659,6 +712,24 @@ void Application::RecreateSwapchain()
 
 
 
+    /*
+        4. Depth Buffer
+    */
+
+
+    m_DepthBuffer.Init(
+        m_Device.GetDevice(),
+        m_Device.GetPhysicalDevice(),
+        m_Swapchain.GetExtent()
+    );
+
+
+
+    /*
+        5. Framebuffer
+    */
+
+
     m_Framebuffer.Init(
         m_Device.GetDevice(),
         m_RenderPass.GetRenderPass(),
@@ -666,6 +737,16 @@ void Application::RecreateSwapchain()
         m_Swapchain.GetExtent(),
         m_DepthBuffer.GetImageView()
     );
+
+
+
+    /*
+        6. CommandBuffer重新录制
+    */
+
+
+    Daybreak::Mesh cube =
+        Daybreak::Mesh::CreateCube();
 
 
 
@@ -678,11 +759,19 @@ void Application::RecreateSwapchain()
         m_Pipeline.GetPipelineLayout(),
         m_DescriptorSet.GetDescriptorSet(),
         m_Framebuffer.GetFramebuffers(),
+
         m_VertexBuffer.GetBuffer(),
-        triangle.GetVertexCount(),
+        cube.GetVertexCount(),
+
         m_VulkanIndexBuffer.GetBuffer(),
-        triangle.GetIndexCount()
+        cube.GetIndexCount()
     );
+
+    m_Camera.SetAspectRatio(
+        float(m_Swapchain.GetExtent().width) /
+        float(m_Swapchain.GetExtent().height)
+    );
+
 }
 
 //void Application::Run()
