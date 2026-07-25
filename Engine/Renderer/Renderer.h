@@ -1,22 +1,36 @@
 #pragma once
 
 
-#include <glad/glad.h>
-#include <iostream>
+#include "Vulkan/VulkanRenderer.h"
 
-class Renderer
+
+namespace Daybreak
 {
-public:
-    void Init();
-    void Draw();
 
-private:
-    GLuint VAO = 0;
-    GLuint VBO = 0;
-    GLuint ShaderProgram = 0;
 
-    GLint offsetLoc = -1;   
+    class Renderer
+    {
 
-    GLuint CompileShader(GLenum type, const char* src);
-    GLuint CreateProgram(const char* vs, const char* fs);
-};
+    public:
+
+        static void Init(GLFWwindow* window);
+
+
+        static void Shutdown();
+
+
+        static void DrawFrame();
+
+        static void SetCamera(
+            Camera* camera
+        );
+
+    private:
+
+        static VulkanRenderer* s_Renderer;
+
+
+    };
+
+
+}
