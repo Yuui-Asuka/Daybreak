@@ -1,206 +1,336 @@
-# Daybreak
-
 # 🌅 Daybreak Engine
 
-> **A Modern Vulkan Rendering Engine built from scratch in C++.**
+<p align="center">
 
-Daybreak is a learning-oriented real-time rendering engine focused on understanding modern graphics programming from the ground up.
+<img src="https://img.shields.io/badge/Graphics-Vulkan-red?style=for-the-badge&logo=vulkan">
+<img src="https://img.shields.io/badge/Language-C%2B%2B20-blue?style=for-the-badge&logo=cplusplus">
+<img src="https://img.shields.io/badge/Build-CMake-green?style=for-the-badge&logo=cmake">
+<img src="https://img.shields.io/badge/Platform-Windows-lightgrey?style=for-the-badge&logo=windows">
 
-Instead of relying on existing engines, every major rendering system is implemented manually using **Vulkan**, providing complete control over the rendering pipeline and GPU resources.
-
----
-
-## ✨ Features
-
-### Rendering
-
-* Vulkan Renderer
-* Vulkan Instance & Surface
-* Physical / Logical Device Selection
-* Swapchain Management
-* Render Pass
-* Graphics Pipeline
-* Framebuffer Management
-* Command Pool & Command Buffers
-* Synchronization (Fence / Semaphore)
-* Vertex Buffer Rendering
-
-### Mesh
-
-* Custom Vertex Structure
-* Mesh Class
-* CPU → GPU Vertex Upload
-* Triangle Rendering from CPU Data
-
-### Window System
-
-* GLFW Window
-* Resize Detection
-* Swapchain Recreation
-
-### Architecture
-
-* Modular Renderer Design
-* RAII-style Vulkan Wrappers
-* Object-Oriented Engine Structure
+</p>
 
 ---
 
-# Project Structure
+# 🚀 About Daybreak
 
-```text
-Daybreak/
-│
-├── Assets/
-│   └── Shaders/
-│
-├── Engine/
-│   ├── Core/
-│   ├── Mesh/
-│   ├── Renderer/
-│   │   └── Vulkan/
-│   └── Window/
-│
-├── Sandbox/
-│
-├── CMakeLists.txt
-└── README.md
+**Daybreak** is a custom rendering engine built from scratch with modern C++ and Vulkan.
+
+The goal of this project is to explore the architecture behind modern real-time rendering engines, including:
+
+- Low-level GPU programming
+- Vulkan rendering pipeline
+- Rendering abstraction design
+- Scene management
+- Asset pipeline
+- Physically Based Rendering
+
+Unlike traditional engines that hide graphics APIs behind high-level abstractions, Daybreak starts from the foundation and builds the entire rendering stack step by step.
+
 ```
-
----
-
-# Rendering Pipeline
-
-```text
 Application
-      │
-      ▼
-Vulkan Context
-      │
-      ▼
-Physical Device
-      │
-      ▼
-Logical Device
-      │
-      ▼
-Swapchain
-      │
-      ▼
-RenderPass
-      │
-      ▼
-Graphics Pipeline
-      │
-      ▼
-Framebuffer
-      │
-      ▼
-Command Buffer
-      │
-      ▼
-Graphics Queue
-      │
-      ▼
-Present Queue
+     |
+     |
+  Renderer
+     |
+     |
+ Vulkan Backend
+     |
+     |
+    GPU
 ```
 
 ---
 
-# Current Progress
+# ✨ Features
 
-* [x] Vulkan Initialization
-* [x] Device Selection
-* [x] Swapchain
-* [x] Render Pass
-* [x] Graphics Pipeline
-* [x] Shader Modules
-* [x] Framebuffers
-* [x] Command Buffers
-* [x] Synchronization
-* [x] Vertex Buffer
-* [x] Mesh System
-* [x] Window Resize Handling
+## ✅ Completed
+
+### Vulkan Rendering Core
+
+- Vulkan Instance
+- Physical Device Selection
+- Logical Device
+- Surface Creation
+- Swapchain
+- Render Pass
+- Framebuffer
+- Graphics Pipeline
+- Command Pool
+- Command Buffer
+- Synchronization System
+
+
+### Mesh Rendering
+
+- Vertex structure
+- Vertex Buffer
+- Index Buffer
+- Mesh abstraction
+- Indexed Drawing
+
+
+Rendering flow:
+
+```
+CPU Mesh Data
+
+      |
+      v
+
+Vertex Buffer
+Index Buffer
+
+      |
+      v
+
+vkCmdDrawIndexed()
+
+      |
+      v
+
+GPU Rendering
+```
 
 ---
 
-# Roadmap
+# 🏗️ Architecture
+
+Current project structure:
+
+```
+Daybreak/
+
+├── Assets
+│
+│   ├── Shaders
+│   ├── Models
+│   └── Textures
+│
+
+├── Engine
+│
+│   ├── Core
+│   │
+│   │   ├── Application
+│   │   └── Engine
+│   │
+│   ├── Renderer
+│   │
+│   │   ├── Mesh
+│   │   ├── Buffer
+│   │   ├── Camera
+│   │   ├── Texture
+│   │   │
+│   │   └── Vulkan
+│   │
+│   ├── Scene
+│   │
+│   ├── Math
+│   │
+│   └── Resource
+│
+├── Sandbox
+│
+├── ThirdParty
+│
+└── CMakeLists.txt
+```
+
+---
+
+# 🎮 Rendering Pipeline
+
+Current rendering pipeline:
+
+```
+Application
+
+    |
+    v
+
+Mesh
+
+    |
+    v
+
+VulkanBuffer
+
+    |
+    v
+
+CommandBuffer
+
+    |
+    v
+
+Graphics Pipeline
+
+    |
+    v
+
+GPU
+```
+
+---
+
+# 🧩 Roadmap
 
 ## Rendering
 
-* [ ] Index Buffer
-* [ ] Uniform Buffer
-* [ ] Descriptor Sets
-* [ ] Texture Loading
-* [ ] Sampler
-* [ ] Push Constants
-* [ ] Dynamic Rendering
+- [x] Triangle Rendering
+- [x] Vertex Buffer
+- [x] Index Buffer
+- [ ] Uniform Buffer (MVP)
+- [ ] Descriptor Set
+- [ ] Texture Sampling
+- [ ] Depth Testing
+- [ ] Shadow Mapping
 
-## Scene
 
-* [ ] Transform Component
-* [ ] Camera
-* [ ] Scene Graph
-* [ ] Entity System
+## Camera System
 
-## Assets
+- [ ] Transform System
+- [ ] Perspective Camera
+- [ ] FPS Camera Controller
+- [ ] Mouse Input
+- [ ] Scroll Zoom
 
-* [ ] OBJ Loader
-* [ ] glTF Loader
-* [ ] Material System
-* [ ] Texture Manager
+
+## Asset Pipeline
+
+- [ ] OBJ Loader
+- [ ] glTF Loader
+- [ ] Material System
+- [ ] Resource Manager
+
 
 ## Lighting
 
-* [ ] Directional Light
-* [ ] Point Light
-* [ ] Shadow Mapping
-* [ ] PBR Rendering
+- [ ] Blinn-Phong Lighting
+- [ ] Normal Mapping
+- [ ] HDR Rendering
+- [ ] Physically Based Rendering (PBR)
 
-## Engine
 
-* [ ] Resource Manager
-* [ ] Renderer Abstraction
-* [ ] ImGui Integration
-* [ ] Multi-Frame Rendering
-* [ ] Render Graph
+## Engine Architecture
 
----
-
-# Technologies
-
-* **C++20**
-* **Vulkan 1.3**
-* **GLFW**
-* **GLM**
-* **CMake**
-* **Vcpkg**
+- [ ] Entity Component System
+- [ ] Scene Serialization
+- [ ] Editor
+- [ ] Runtime Layer
+- [ ] Multi-threaded Rendering
 
 ---
 
-# Philosophy
+# 🔧 Technology Stack
 
-Daybreak is built with one goal:
-
-> **Understand every layer of a modern rendering engine instead of hiding it.**
-
-Every Vulkan object is wrapped manually, every rendering stage is implemented explicitly, and every subsystem is designed to be readable, extensible, and educational.
-
----
-
-# Screenshot
-
-> *(Coming Soon)*
+| Component | Technology |
+|---|---|
+| Language | C++20 |
+| Graphics API | Vulkan |
+| Window System | GLFW |
+| Math Library | GLM |
+| Build System | CMake |
+| Package Manager | vcpkg |
+| Shader Language | GLSL |
 
 ---
 
-# License
+# 🖥️ Current Development Stage
 
-This project is released under the **MIT License**.
+Daybreak is currently in the **Vulkan Rendering Foundation Stage**.
+
+Current achievement:
+
+```
+CPU Data
+
+    |
+    v
+
+GPU Buffer
+
+    |
+    v
+
+Vulkan Pipeline
+
+    |
+    v
+
+Triangle Rendering
+```
+
+The next milestone:
+
+```
+Mesh
+
+ |
+
+Material
+
+ |
+
+Texture
+
+ |
+
+Camera
+
+ |
+
+Lighting
+
+ |
+
+PBR
+
+ |
+
+Scene
+
+ |
+
+Editor
+```
 
 ---
 
-<p align="center">
-    <strong>🌅 Daybreak Engine</strong><br>
-    Learn • Build • Render
-</p>
+# 📌 Philosophy
+
+Daybreak follows one simple principle:
+
+> Understand every layer between code and pixels.
+
+From:
+
+```
+C++ Object
+```
+
+to:
+
+```
+GPU Command
+```
+
+to:
+
+```
+Final Pixel
+```
+
+Every system is built step by step to understand how modern graphics engines work internally.
+
+---
+
+# 📷 Screenshots
+
+Coming soon.
+
+---
+
+# 📄 License
+
+This project is currently under development.
