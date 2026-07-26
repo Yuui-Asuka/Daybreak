@@ -6,7 +6,27 @@
 namespace Daybreak
 {
 
-
+    /**
+     * @brief Creates a depth buffer resource.
+     *
+     * A Vulkan depth buffer consists of:
+     *
+     * - VkImage:
+     *   Stores depth information used during depth testing.
+     *
+     * - VkDeviceMemory:
+     *   Allocated GPU memory backing the image.
+     *
+     * - VkImageView:
+     *   Describes how the image is accessed by the render pass.
+     *
+     * The depth image is stored in device-local memory because it is
+     * exclusively accessed by the GPU during rendering.
+     *
+     * @param device Vulkan logical device.
+     * @param physicalDevice Physical device used for memory selection.
+     * @param extent Depth buffer resolution.
+     */
     void VulkanDepthBuffer::Init(
         VkDevice device,
         VkPhysicalDevice physicalDevice,
@@ -20,11 +40,22 @@ namespace Daybreak
 
 
 
+        /**
+         * @brief Select depth image format.
+         *
+         * D32_SFLOAT stores depth values using 32-bit floating point
+         * precision.
+         */
         VkFormat depthFormat =
             VK_FORMAT_D32_SFLOAT;
 
 
 
+        /**
+         * @brief Image creation information.
+         *
+         * Creates a 2D image used as a depth attachment.
+         */
         VkImageCreateInfo imageInfo{};
 
 
@@ -64,6 +95,12 @@ namespace Daybreak
             VK_IMAGE_TILING_OPTIMAL;
 
 
+        /**
+         * @brief Initial image layout.
+         *
+         * The render pass will transition the image to the required
+         * depth attachment layout before rendering.
+         */
         imageInfo.initialLayout =
             VK_IMAGE_LAYOUT_UNDEFINED;
 
@@ -95,6 +132,9 @@ namespace Daybreak
 
 
 
+        /**
+         * @brief Query required memory properties.
+         */
         VkMemoryRequirements requirements{};
 
 
@@ -117,6 +157,13 @@ namespace Daybreak
             requirements.size;
 
 
+
+        /**
+         * @brief Allocate GPU-local memory.
+         *
+         * Depth images are only accessed by the GPU, therefore
+         * device-local memory provides the best performance.
+         */
         allocInfo.memoryTypeIndex =
             FindMemoryType(
                 requirements.memoryTypeBits,
@@ -139,6 +186,9 @@ namespace Daybreak
 
 
 
+        /**
+         * @brief Bind allocated memory to the depth image.
+         */
         vkBindImageMemory(
             m_Device,
             m_Image,
@@ -148,6 +198,12 @@ namespace Daybreak
 
 
 
+        /**
+         * @brief Creates an image view for the depth image.
+         *
+         * The image view allows the render pass to access the depth
+         * attachment.
+         */
         VkImageViewCreateInfo viewInfo{};
 
 
@@ -204,42 +260,73 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Releases depth buffer resources.
+     *
+     * Resources must be destroyed in reverse dependency order:
+     *
+     * ImageView
+     *     |
+     * Image
+     *     |
+     * Device Memory
+     */
     void VulkanDepthBuffer::Shutdown()
     {
 
-        if (m_ImageView)
+        if (m_ImageView != VK_NULL_HANDLE)
         {
             vkDestroyImageView(
                 m_Device,
                 m_ImageView,
                 nullptr
             );
+
+            m_ImageView =
+                VK_NULL_HANDLE;
         }
 
 
-        if (m_Image)
+        if (m_Image != VK_NULL_HANDLE)
         {
             vkDestroyImage(
                 m_Device,
                 m_Image,
                 nullptr
             );
+
+            m_Image =
+                VK_NULL_HANDLE;
         }
 
 
-        if (m_Memory)
+        if (m_Memory != VK_NULL_HANDLE)
         {
             vkFreeMemory(
                 m_Device,
                 m_Memory,
                 nullptr
             );
+
+            m_Memory =
+                VK_NULL_HANDLE;
         }
 
     }
 
 
 
+    /**
+     * @brief Finds a compatible Vulkan memory type.
+     *
+     * Searches the physical device memory properties for a memory
+     * type matching the requested requirements.
+     *
+     * @param typeFilter Supported memory type bit mask.
+     * @param properties Required memory properties.
+     *
+     * @return Compatible memory type index.
+     */
     uint32_t VulkanDepthBuffer::FindMemoryType(
         uint32_t typeFilter,
         VkMemoryPropertyFlags properties

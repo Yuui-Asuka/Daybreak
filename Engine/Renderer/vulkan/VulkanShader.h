@@ -5,50 +5,49 @@
 #include <string>
 #include <vector>
 
+
 namespace Daybreak
 {
 
-    /*
-        VulkanShader
 
-        管理 Vulkan Shader Module。
-
-        Shader流程：
-
-            GLSL/HLSL
-                |
-                v
-
-            SPIR-V (.spv)
-                |
-                v
-
-            VkShaderModule
-                |
-                v
-            Graphics Pipeline
-
-        当前：
-
-            Vertex Shader
-            Fragment Shader
-
-
-    */
+    /**
+     * @class VulkanShader
+     *
+     * @brief Manages Vulkan shader modules.
+     *
+     * Shader compilation pipeline:
+     *
+     * GLSL/HLSL
+     *      |
+     *      v
+     * SPIR-V (.spv)
+     *      |
+     *      v
+     * VkShaderModule
+     *      |
+     *      v
+     * Graphics Pipeline
+     *
+     * Current supported shader stages:
+     *
+     * - Vertex Shader
+     * - Fragment Shader
+     */
     class VulkanShader
     {
     public:
 
-        /*
-            创建Shader Module。
-            device:
-                Vulkan Logical Device
-            vertPath:
-                Vertex Shader SPIR-V文件路径
-            fragPath:
-                Fragment Shader SPIR-V文件路径
 
-        */
+        /**
+         * @brief Initializes shader modules.
+         *
+         * Loads SPIR-V shader binaries and creates
+         * Vulkan shader module objects.
+         *
+         * @param device Vulkan logical device used to create shader modules.
+         * @param vertPath Path to the vertex shader SPIR-V file.
+         * @param fragPath Path to the fragment shader SPIR-V file.
+         */
         void Init(
             VkDevice device,
             const std::string& vertPath,
@@ -56,86 +55,105 @@ namespace Daybreak
         );
 
 
-        /*
-            销毁Shader Module资源。
-        */
+
+        /**
+         * @brief Releases shader module resources.
+         *
+         * Destroys vertex and fragment shader modules.
+         */
         void Shutdown();
 
 
-        /*
-            获取Vertex Shader Module。
-            用于：
-                VkPipelineShaderStageCreateInfo
 
-        */
+        /**
+         * @brief Retrieves the vertex shader module.
+         *
+         * Used by VkPipelineShaderStageCreateInfo.
+         *
+         * @return VkShaderModule Vertex shader module handle.
+         */
         VkShaderModule GetVertexShader() const
         {
             return m_VertexShader;
         }
 
 
-        /*
-            获取Fragment Shader Module。
-            用于：
-                VkPipelineShaderStageCreateInfo
 
-        */
+        /**
+         * @brief Retrieves the fragment shader module.
+         *
+         * Used by VkPipelineShaderStageCreateInfo.
+         *
+         * @return VkShaderModule Fragment shader module handle.
+         */
         VkShaderModule GetFragmentShader() const
         {
             return m_FragmentShader;
         }
 
 
+
     private:
 
-        /*
-            根据SPIR-V二进制创建VkShaderModule。
-            输入：
-                .spv文件内容
-            输出：
-                VkShaderModule
 
-        */
+        /**
+         * @brief Creates a Vulkan shader module from SPIR-V data.
+         *
+         * @param code SPIR-V binary shader data.
+         *
+         * @return VkShaderModule Created shader module handle.
+         */
         VkShaderModule CreateShaderModule(
             const std::vector<char>& code
         );
 
 
-        /*
-            从磁盘读取SPIR-V文件。
-            Vulkan Shader不是直接读取文本。
-            需要读取编译后的二进制。
 
-        */
+        /**
+         * @brief Reads a binary shader file from disk.
+         *
+         * Loads compiled SPIR-V data used to create
+         * Vulkan shader modules.
+         *
+         * @param filename Path to the shader file.
+         *
+         * @return std::vector<char> Shader binary data.
+         */
         std::vector<char> ReadFile(
             const std::string& filename
         );
 
 
+
     private:
 
-        /*
-            Vulkan Logical Device。
-            Shader Module属于Device资源。
 
-        */
+        /**
+         * @brief Vulkan logical device.
+         *
+         * Shader modules are device-owned resources,
+         * therefore creation and destruction require VkDevice.
+         */
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
 
-        /*
-            Vertex Shader Module
-        */
+
+        /**
+         * @brief Vertex shader module.
+         */
         VkShaderModule m_VertexShader =
             VK_NULL_HANDLE;
 
 
-        /*
-            Fragment Shader Module
-        */
+
+        /**
+         * @brief Fragment shader module.
+         */
         VkShaderModule m_FragmentShader =
             VK_NULL_HANDLE;
 
     };
+
 
 }

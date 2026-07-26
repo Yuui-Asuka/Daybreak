@@ -3,45 +3,59 @@
 #include <stdexcept>
 #include <iostream>
 
+
 namespace Daybreak
 {
 
+    /**
+     * @brief Initializes Vulkan synchronization objects.
+     *
+     * Synchronization objects are device-level resources and must be
+     * created using the Vulkan logical device.
+     *
+     * This creates:
+     *
+     * - Semaphore for swapchain image acquisition.
+     * - Semaphore for render completion.
+     * - Fence for CPU-GPU frame synchronization.
+     *
+     * @param device Vulkan logical device.
+     */
     void VulkanSync::Init(
         VkDevice device)
     {
-        /*
-            保存Logical Device。
-
-            Semaphore和Fence都是Device资源。
-
-            创建和销毁都需要VkDevice。
-        */
         m_Device = device;
 
-
-        /*
-            创建同步对象：
-
-                ImageAvailable Semaphore
-
-                RenderFinished Semaphore
-
-                InFlight Fence
-        */
         CreateSyncObjects();
     }
 
 
 
+    /**
+     * @brief Creates synchronization primitives used during rendering.
+     *
+     * The synchronization flow:
+     *
+     * 1. ImageAvailableSemaphore
+     *    Signals that a swapchain image is ready for rendering.
+     *
+     * 2. GPU submits rendering commands.
+     *
+     * 3. RenderFinishedSemaphore
+     *    Signals that rendering has completed.
+     *
+     * 4. Presentation waits for RenderFinishedSemaphore.
+     *
+     * The fence allows the CPU to wait until the previous frame has
+     * finished execution on the GPU.
+     */
     void VulkanSync::CreateSyncObjects()
     {
-        /*
-            Semaphore创建信息。
-
-            Semaphore没有额外参数。
-
-            只需要指定结构类型。
-        */
+        /**
+         * @brief Semaphore creation information.
+         *
+         * Vulkan semaphores do not require additional configuration.
+         */
         VkSemaphoreCreateInfo semaphoreInfo{};
 
         semaphoreInfo.sType =
@@ -49,12 +63,11 @@ namespace Daybreak
 
 
 
-        /*
-            Fence创建信息。
-
-            Fence用于CPU等待GPU完成。
-
-        */
+        /**
+         * @brief Fence creation information.
+         *
+         * A fence is used for CPU-side synchronization with GPU work.
+         */
         VkFenceCreateInfo fenceInfo{};
 
         fenceInfo.sType =
@@ -62,39 +75,26 @@ namespace Daybreak
 
 
 
-        /*
-            设置Fence初始状态。
-
-            VK_FENCE_CREATE_SIGNALED_BIT:
-
-                创建后立即处于完成状态。
-
-
-            这样第一帧DrawFrame：
-
-                vkWaitForFences()
-
-            不会无限等待。
-        */
+        /**
+         * @brief Create the fence in signaled state.
+         *
+         * The first frame can immediately continue without waiting
+         * for a previous GPU submission.
+         */
         fenceInfo.flags =
             VK_FENCE_CREATE_SIGNALED_BIT;
 
 
 
-        /*
-            创建Image Available Semaphore。
-
-
-            用于：
-
-                vkAcquireNextImageKHR()
-
-
-            表示：
-
-                Swapchain Image已经获取完成。
-
-        */
+        /**
+         * @brief Creates the image acquisition semaphore.
+         *
+         * This semaphore is signaled by:
+         *
+         * vkAcquireNextImageKHR()
+         *
+         * and waited by the rendering submission.
+         */
         if (vkCreateSemaphore(
             m_Device,
             &semaphoreInfo,
@@ -109,20 +109,12 @@ namespace Daybreak
 
 
 
-        /*
-            创建Render Finished Semaphore。
-
-
-            用于：
-
-                vkQueuePresentKHR()
-
-
-            表示：
-
-                GPU已经完成渲染。
-
-        */
+        /**
+         * @brief Creates the rendering completion semaphore.
+         *
+         * This semaphore is signaled after rendering commands
+         * finish execution and is waited by presentation.
+         */
         if (vkCreateSemaphore(
             m_Device,
             &semaphoreInfo,
@@ -137,15 +129,12 @@ namespace Daybreak
 
 
 
-        /*
-            创建In Flight Fence。
-
-
-            CPU通过Fence判断：
-
-                GPU是否完成上一帧任务。
-
-        */
+        /**
+         * @brief Creates the frame synchronization fence.
+         *
+         * The CPU waits on this fence before reusing resources
+         * from a previous frame.
+         */
         if (vkCreateFence(
             m_Device,
             &fenceInfo,
@@ -166,23 +155,14 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Releases synchronization objects.
+     *
+     * All synchronization objects are owned by the logical device
+     * and must be destroyed before destroying VkDevice.
+     */
     void VulkanSync::Shutdown()
     {
-        /*
-            销毁顺序：
-
-                Fence
-
-                Semaphore
-
-                Semaphore
-
-
-            Semaphore和Fence属于Device资源。
-
-            所以必须在vkDestroyDevice之前销毁。
-        */
-
 
         if (m_InFlightFence != VK_NULL_HANDLE)
         {

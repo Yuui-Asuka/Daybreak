@@ -1,13 +1,35 @@
 #include "VulkanDescriptorSet.h"
 
 #include <stdexcept>
-#include<iostream>
 
 
 namespace Daybreak
 {
 
-
+    /**
+     * @brief Allocates and initializes a Vulkan descriptor set.
+     *
+     * A descriptor set stores references to GPU resources that are
+     * accessed by shaders.
+     *
+     * The descriptor set layout defines the binding structure:
+     *
+     * binding 0:
+     *     Uniform Buffer
+     *
+     * binding 1:
+     *     Combined Image Sampler
+     *
+     * The actual resources are assigned through
+     * vkUpdateDescriptorSets().
+     *
+     * @param device Vulkan logical device.
+     * @param descriptorPool Descriptor pool used for allocation.
+     * @param layout Descriptor set layout describing bindings.
+     * @param uniformBuffer Buffer bound to the uniform buffer binding.
+     * @param bufferSize Size of the uniform buffer range.
+     * @param textureInfo Image sampler information.
+     */
     void VulkanDescriptorSet::Init(
         VkDevice device,
         VkDescriptorPool descriptorPool,
@@ -21,18 +43,13 @@ namespace Daybreak
         m_Device = device;
 
 
-        /*
-            分配 DescriptorSet
 
-            来源:
-                DescriptorPool
-
-            模板:
-                DescriptorSetLayout
-
-        */
-
-
+        /**
+         * @brief Allocate descriptor set from descriptor pool.
+         *
+         * DescriptorSetLayout defines the expected resource bindings,
+         * while DescriptorPool provides the memory used for allocation.
+         */
         VkDescriptorSetAllocateInfo allocInfo{};
 
 
@@ -44,7 +61,8 @@ namespace Daybreak
             descriptorPool;
 
 
-        allocInfo.descriptorSetCount = 1;
+        allocInfo.descriptorSetCount =
+            1;
 
 
         allocInfo.pSetLayouts =
@@ -65,20 +83,11 @@ namespace Daybreak
 
 
 
-        /*
-            描述 Uniform Buffer
-
-            告诉 Vulkan:
-
-            binding 0
-                 |
-                 |
-                 v
-            这个 VkBuffer
-
-        */
-
-
+        /**
+         * @brief Describe uniform buffer binding.
+         *
+         * This connects shader binding 0 with the Vulkan buffer.
+         */
         VkDescriptorBufferInfo bufferInfo{};
 
 
@@ -86,7 +95,8 @@ namespace Daybreak
             uniformBuffer;
 
 
-        bufferInfo.offset = 0;
+        bufferInfo.offset =
+            0;
 
 
         bufferInfo.range =
@@ -94,52 +104,51 @@ namespace Daybreak
 
 
 
-        /*
-            更新 DescriptorSet
-
-            把 Buffer 绑定进去
-
-        */
+        /**
+         * @brief Write uniform buffer binding.
+         */
+        VkWriteDescriptorSet bufferWrite{};
 
 
-        VkWriteDescriptorSet descriptorWrite{};
-
-
-        descriptorWrite.sType =
+        bufferWrite.sType =
             VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 
 
-        descriptorWrite.dstSet =
+        bufferWrite.dstSet =
             m_DescriptorSet;
 
 
-        descriptorWrite.dstBinding = 0;
+        bufferWrite.dstBinding =
+            0;
 
 
-        descriptorWrite.dstArrayElement = 0;
+        bufferWrite.dstArrayElement =
+            0;
 
 
-        descriptorWrite.descriptorType =
+        bufferWrite.descriptorType =
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
 
-        descriptorWrite.descriptorCount = 1;
+        bufferWrite.descriptorCount =
+            1;
 
 
-        descriptorWrite.pBufferInfo =
+        bufferWrite.pBufferInfo =
             &bufferInfo;
 
 
 
+        /**
+         * @brief Write texture sampler binding.
+         *
+         * This connects shader binding 1 with the image sampler.
+         */
         VkWriteDescriptorSet textureWrite{};
 
 
         textureWrite.sType =
             VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-
-
-        textureWrite.pNext =
-            nullptr;
 
 
         textureWrite.dstSet =
@@ -166,25 +175,21 @@ namespace Daybreak
             &textureInfo;
 
 
+
         VkWriteDescriptorSet writes[] =
         {
-            descriptorWrite,
+            bufferWrite,
             textureWrite
         };
 
 
-        std::cout
-            << "ImageView: "
-            << textureInfo.imageView
-            << std::endl;
 
-
-        std::cout
-            << "Sampler: "
-            << textureInfo.sampler
-            << std::endl;
-
-
+        /**
+         * @brief Update descriptor set bindings.
+         *
+         * After this call, shaders can access the bound resources
+         * through the corresponding descriptor bindings.
+         */
         vkUpdateDescriptorSets(
             device,
             2,
@@ -197,21 +202,18 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Releases descriptor set reference.
+     *
+     * Descriptor sets are owned by the descriptor pool and are
+     * automatically released when the pool is destroyed.
+     */
     void VulkanDescriptorSet::Shutdown()
     {
-
-        /*
-            DescriptorSet 不需要手动销毁。
-
-            它由 DescriptorPool 管理。
-
-        */
-
 
         m_DescriptorSet =
             VK_NULL_HANDLE;
 
     }
-
 
 }

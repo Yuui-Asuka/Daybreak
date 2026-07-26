@@ -22,7 +22,6 @@ namespace Daybreak
     }
 
 
-
     void VulkanUniformBuffer::Upload(
         void* data,
         VkDeviceSize size
@@ -35,7 +34,6 @@ namespace Daybreak
         );
 
     }
-
 
 
     void VulkanUniformBuffer::Shutdown()

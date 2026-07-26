@@ -5,43 +5,62 @@
 #include <iostream>
 
 
-
 namespace Daybreak
 {
 
 
+    /**
+     * @brief Initializes the Vulkan renderer.
+     *
+     * Creates and initializes all rendering resources:
+     *
+     * - Vulkan context
+     * - Physical and logical device
+     * - Command pool
+     * - Swapchain
+     * - Render pass
+     * - Shader modules
+     * - Buffers
+     * - Descriptor resources
+     * - Graphics pipeline
+     * - Frame synchronization objects
+     *
+     * @param window GLFW window used for rendering.
+     */
     void VulkanRenderer::Init(
         GLFWwindow* window
     )
     {
 
+        // Store the rendering window.
         m_Window = window;
 
 
-
+        // Initialize Vulkan instance.
         m_Context.Init();
 
 
+        // Create window surface.
         m_Context.CreateSurface(
             window
         );
 
 
-
+        // Initialize GPU device.
         m_Device.Init(
             m_Context.GetInstance(),
             m_Context.GetSurface()
         );
 
 
-
+        // Create command pool for GPU command allocation.
         m_CommandPool.Init(
             m_Device.GetDevice(),
             m_Device.GetGraphicsQueueFamily()
         );
 
 
-
+        // Initialize texture resources.
         m_Texture.Init(
             m_Device.GetDevice(),
             m_Device.GetPhysicalDevice(),
@@ -51,7 +70,7 @@ namespace Daybreak
         );
 
 
-
+        // Create swapchain.
         m_Swapchain.Init(
             &m_Device,
             m_Context.GetSurface(),
@@ -59,14 +78,14 @@ namespace Daybreak
         );
 
 
-
+        // Create render pass.
         m_RenderPass.Init(
             m_Device.GetDevice(),
             m_Swapchain.GetImageFormat()
         );
 
 
-
+        // Load shader modules.
         m_Shader.Init(
             m_Device.GetDevice(),
             "D:/vs/projects/Daybreak/Daybreak/Assets/Shaders/triangle.vert.spv",
@@ -74,12 +93,13 @@ namespace Daybreak
         );
 
 
-
+        // Create cube mesh data.
         Mesh cube =
             Mesh::CreateCube();
 
 
 
+        // Create vertex buffer.
         m_VertexBuffer.Init(
             m_Device.GetDevice(),
             m_Device.GetPhysicalDevice(),
@@ -90,7 +110,7 @@ namespace Daybreak
         );
 
 
-
+        // Upload vertex data to GPU memory.
         m_VertexBuffer.Upload(
             cube.GetVertices().data(),
             sizeof(Vertex)
@@ -100,6 +120,7 @@ namespace Daybreak
 
 
 
+        // Create index buffer.
         m_VulkanIndexBuffer.Init(
             m_Device.GetDevice(),
             m_Device.GetPhysicalDevice(),
@@ -108,6 +129,7 @@ namespace Daybreak
 
 
 
+        // Create uniform buffer.
         m_UniformBuffer.Init(
             m_Device.GetDevice(),
             m_Device.GetPhysicalDevice(),
@@ -116,23 +138,27 @@ namespace Daybreak
 
 
 
+        // Create descriptor set layout.
         m_DescriptorSetLayout.Init(
             m_Device.GetDevice()
         );
 
 
 
+        // Create descriptor pool.
         m_DescriptorPool.Init(
             m_Device.GetDevice()
         );
 
 
 
+        // Retrieve texture descriptor information.
         VkDescriptorImageInfo textureInfo =
             m_Texture.GetDescriptorInfo();
 
 
 
+        // Create descriptor set.
         m_DescriptorSet.Init(
             m_Device.GetDevice(),
             m_DescriptorPool.GetPool(),
@@ -144,6 +170,7 @@ namespace Daybreak
 
 
 
+        // Create graphics pipeline.
         m_Pipeline.Init(
             m_Device.GetDevice(),
             m_Swapchain.GetExtent(),
@@ -155,6 +182,7 @@ namespace Daybreak
 
 
 
+        // Create depth buffer resources.
         m_DepthBuffer.Init(
             m_Device.GetDevice(),
             m_Device.GetPhysicalDevice(),
@@ -163,6 +191,7 @@ namespace Daybreak
 
 
 
+        // Create framebuffer resources.
         m_Framebuffer.Init(
             m_Device.GetDevice(),
             m_RenderPass.GetRenderPass(),
@@ -173,6 +202,7 @@ namespace Daybreak
 
 
 
+        // Record rendering command buffers.
         m_CommandBuffer.Init(
             m_Device.GetDevice(),
             m_CommandPool.GetCommandPool(),
@@ -188,14 +218,22 @@ namespace Daybreak
             cube.GetIndexCount()
         );
 
-        if (m_Camera) {
 
-            m_Camera->SetPosition({ 0,0,5 });
+
+        // Initialize camera parameters.
+        if (m_Camera)
+        {
+
+            m_Camera->SetPosition(
+                { 0,0,5 }
+            );
+
 
             m_Camera->SetAspectRatio(
                 float(m_Swapchain.GetExtent().width) /
                 float(m_Swapchain.GetExtent().height)
             );
+
 
             m_Camera->ProcessMouseMovement(
                 45,
@@ -203,18 +241,35 @@ namespace Daybreak
             );
 
         }
+
+
+
+        // Create synchronization objects.
         m_Sync.Init(
             m_Device.GetDevice()
         );
 
-
     }
 
+    /**
+ * @brief Renders one frame.
+ *
+ * Rendering process:
+ *
+ * 1. Wait for previous GPU work to finish.
+ * 2. Update uniform buffer data.
+ * 3. Acquire a swapchain image.
+ * 4. Submit command buffer to GPU.
+ * 5. Present rendered image to the window.
+ */
     void VulkanRenderer::DrawFrame()
     {
+
         int width;
         int height;
 
+
+        // Get current framebuffer size.
         glfwGetFramebufferSize(
             m_Window,
             &width,
@@ -222,6 +277,7 @@ namespace Daybreak
         );
 
 
+        // Skip rendering when the window is minimized.
         if (width == 0 || height == 0)
         {
             return;
@@ -229,19 +285,10 @@ namespace Daybreak
 
 
 
-        /*
-            等待上一帧GPU执行完成。
-
-            Fence用于CPU和GPU同步。
-
-            如果GPU还没有完成上一帧：
-
-                CPU会阻塞等待。
-
-            防止CPU提交过快导致资源冲突。
-        */
+        // Wait until the previous frame has finished rendering.
         VkFence inFlightFence =
             m_Sync.GetInFlightFence();
+
 
         vkWaitForFences(
             m_Device.GetDevice(),
@@ -252,15 +299,7 @@ namespace Daybreak
         );
 
 
-        /*
-            重置Fence。
-
-            vkQueueSubmit提交任务时：
-
-                Fence状态会变为未完成。
-
-            下一帧再次等待。
-        */
+        // Reset fence before submitting new GPU work.
         vkResetFences(
             m_Device.GetDevice(),
             1,
@@ -268,16 +307,17 @@ namespace Daybreak
         );
 
 
-        // ==========================
-       // 更新 Uniform Buffer
-       // ==========================
 
+        // Update per-frame uniform data.
         Daybreak::UniformBufferObject ubo{};
 
 
         ubo.model =
             glm::mat4(1.0f);
-        if (m_Camera) {
+
+
+        if (m_Camera)
+        {
 
             ubo.view =
                 m_Camera->GetViewMatrix();
@@ -288,34 +328,21 @@ namespace Daybreak
 
         }
 
+
+        // Upload transformation data to GPU.
         m_UniformBuffer.Upload(
             &ubo,
             sizeof(ubo)
         );
 
 
-        m_UniformBuffer.Upload(
-            &ubo,
-            sizeof(ubo)
-        );
-
-        /*
-            从Swapchain获取一张可绘制Image。
-
-            imageAvailable Semaphore:
-
-                当Image准备完成后触发。
-
-
-            imageIndex:
-
-                当前需要渲染的Swapchain Image编号。
-
-        */
+        // Acquire an available swapchain image.
         uint32_t imageIndex = 0;
+
 
         VkSemaphore imageAvailable =
             m_Sync.GetImageAvailableSemaphore();
+
 
         VkResult result =
             vkAcquireNextImageKHR(
@@ -328,6 +355,7 @@ namespace Daybreak
             );
 
 
+        // Recreate swapchain when the window size changes.
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
             RecreateSwapchain();
@@ -343,86 +371,40 @@ namespace Daybreak
             );
         }
 
-        //std::cout << "Acquire Done\n";
-        /*
-            指定GPU执行CommandBuffer之前：
-
-            需要等待的Pipeline阶段。
 
 
-            当前：
-
-                等待Color Attachment输出阶段。
-
-        */
+        // Define the pipeline stage that waits for image availability.
         VkPipelineStageFlags waitStages[] =
         {
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
         };
 
 
-        /*
-            GPU完成渲染后：
 
-                触发Render Finished Semaphore。
-
-
-            Present Queue等待这个信号。
-
-        */
+        // Semaphore signaled after rendering is completed.
         VkSemaphore renderFinished =
             m_Sync.GetRenderFinishedSemaphore();
 
 
-        /*
-            根据Swapchain Image选择对应CommandBuffer。
 
-
-            关系：
-
-                Swapchain Image
-
-                        |
-
-                        v
-
-                  Framebuffer
-
-                        |
-
-                        v
-
-                  CommandBuffer
-
-        */
+        // Select command buffer matching the swapchain image.
         VkCommandBuffer commandBuffer =
             m_CommandBuffer.GetCommandBuffers()[imageIndex];
 
 
-        /*
-            Queue Submit信息。
 
-            描述：
-
-                等待什么Semaphore
-
-                执行什么CommandBuffer
-
-                完成后触发什么Semaphore
-
-        */
+        // Configure GPU submission information.
         VkSubmitInfo submitInfo{};
+
 
         submitInfo.sType =
             VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 
-        /*
-            等待Image Available Semaphore。
 
-            确保Swapchain Image已经可以写入。
-        */
+        // Wait for swapchain image to become available.
         submitInfo.waitSemaphoreCount = 1;
+
 
         submitInfo.pWaitSemaphores =
             &imageAvailable;
@@ -432,52 +414,26 @@ namespace Daybreak
             waitStages;
 
 
-        /*
-            提交CommandBuffer。
 
-            GPU执行这里记录的：
-
-                BeginRenderPass
-
-                BindPipeline
-
-                Draw
-
-                EndRenderPass
-
-        */
+        // Submit recorded rendering commands.
         submitInfo.commandBufferCount = 1;
+
 
         submitInfo.pCommandBuffers =
             &commandBuffer;
 
 
-        /*
-            GPU完成绘制后：
 
-                触发Render Finished Semaphore。
-
-            供Present使用。
-        */
+        // Signal semaphore after rendering finishes.
         submitInfo.signalSemaphoreCount = 1;
+
 
         submitInfo.pSignalSemaphores =
             &renderFinished;
 
 
-        /*
-            提交绘制任务到Graphics Queue。
 
-
-            Fence:
-
-                GPU完成后自动Signaled。
-
-
-            下一帧vkWaitForFences等待它。
-
-        */
-
+        // Submit commands to graphics queue.
         VkResult resultx =
             vkQueueSubmit(
                 m_Device.GetGraphicsQueue(),
@@ -501,61 +457,40 @@ namespace Daybreak
         }
 
 
-        //if (vkQueueSubmit(
-        //    m_Device.GetGraphicsQueue(),
-        //    1,
-        //    &submitInfo,
-        //    inFlightFence)
-        //    != VK_SUCCESS)
-        //{
-        //    throw std::runtime_error(
-        //        "Failed to submit draw command!"
-        //    );
-        //}
-        //std::cout << "Submit Done\n";
 
-        /*
-            Present信息。
-
-            告诉Present Queue：
-
-                显示哪一个Swapchain Image。
-
-        */
+        // Prepare image presentation information.
         VkPresentInfoKHR presentInfo{};
+
 
         presentInfo.sType =
             VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
 
-        /*
-            Present之前等待GPU渲染完成。
 
-        */
+        // Wait until rendering is finished before presenting.
         presentInfo.waitSemaphoreCount = 1;
+
 
         presentInfo.pWaitSemaphores =
             &renderFinished;
+
 
 
         VkSwapchainKHR swapchain =
             m_Swapchain.GetSwapchain();
 
 
-        /*
-            当前只有一个Swapchain。
 
-        */
+        // Present one swapchain image.
         presentInfo.swapchainCount = 1;
+
 
         presentInfo.pSwapchains =
             &swapchain;
 
 
-        /*
-            指定显示的Image。
 
-        */
+        // Specify image index to display.
         presentInfo.pImageIndices =
             &imageIndex;
 
@@ -563,6 +498,9 @@ namespace Daybreak
         presentInfo.pResults =
             nullptr;
 
+
+
+        // Submit presentation request.
         VkResult presentResult =
             vkQueuePresentKHR(
                 m_Device.GetPresentQueue(),
@@ -570,6 +508,7 @@ namespace Daybreak
             );
 
 
+        // Recreate swapchain if it is invalid.
         if (presentResult == VK_ERROR_OUT_OF_DATE_KHR ||
             presentResult == VK_SUBOPTIMAL_KHR)
         {
@@ -587,52 +526,113 @@ namespace Daybreak
 
     }
 
+    /**
+ * @brief Releases all Vulkan renderer resources.
+ *
+ * Resources are destroyed in reverse order of creation
+ * to respect Vulkan object dependencies.
+ */
     void VulkanRenderer::Shutdown()
     {
 
+        // Wait until all GPU operations are completed.
         vkDeviceWaitIdle(
             m_Device.GetDevice()
         );
 
 
+        // Destroy synchronization resources.
         m_Sync.Shutdown();
 
+
+        // Destroy command buffers.
         m_CommandBuffer.Shutdown();
 
+
+        // Destroy framebuffer resources.
         m_Framebuffer.Shutdown();
 
+
+        // Destroy depth buffer resources.
         m_DepthBuffer.Shutdown();
 
+
+        // Destroy descriptor resources.
         m_DescriptorSet.Shutdown();
 
         m_DescriptorPool.Shutdown();
 
         m_DescriptorSetLayout.Shutdown();
 
+
+
+        // Destroy GPU buffer resources.
         m_VulkanIndexBuffer.Shutdown();
 
         m_VertexBuffer.Shutdown();
 
         m_UniformBuffer.Shutdown();
 
+
+
+        // Destroy graphics pipeline resources.
         m_Pipeline.Shutdown();
 
+
+
+        // Destroy shader modules.
         m_Shader.Shutdown();
 
+
+
+        // Destroy render pass.
         m_RenderPass.Shutdown();
 
+
+
+        // Destroy swapchain resources.
         m_Swapchain.Shutdown();
 
+
+
+        // Destroy texture resources.
         m_Texture.Shutdown();
 
+
+
+        // Destroy command pool.
         m_CommandPool.Shutdown();
 
+
+
+        // Destroy logical device.
         m_Device.Shutdown();
 
+
+
+        // Destroy Vulkan instance and surface.
         m_Context.Shutdown();
 
     }
 
+
+    /**
+     * @brief Recreates swapchain-dependent resources.
+     *
+     * Called when:
+     *
+     * - Window size changes.
+     * - Swapchain becomes invalid.
+     *
+     * Recreates:
+     *
+     * - Swapchain
+     * - Render pass
+     * - Pipeline
+     * - Depth buffer
+     * - Framebuffer
+     * - Command buffers
+     */
     void VulkanRenderer::RecreateSwapchain()
     {
 
@@ -640,6 +640,7 @@ namespace Daybreak
         int height = 0;
 
 
+        // Query current framebuffer size.
         glfwGetFramebufferSize(
             m_Window,
             &width,
@@ -647,20 +648,25 @@ namespace Daybreak
         );
 
 
-        // 最小化窗口时等待
+
+        // Wait until the window has a valid size.
         while (width == 0 || height == 0)
         {
+
             glfwGetFramebufferSize(
                 m_Window,
                 &width,
                 &height
             );
 
+
             glfwWaitEvents();
+
         }
 
 
 
+        // Ensure GPU is idle before recreating resources.
         vkDeviceWaitIdle(
             m_Device.GetDevice()
         );
@@ -668,9 +674,8 @@ namespace Daybreak
 
 
         /*
-            1. 销毁旧资源
+            Destroy old swapchain-dependent resources.
         */
-
 
         m_CommandBuffer.Shutdown();
 
@@ -687,9 +692,8 @@ namespace Daybreak
 
 
         /*
-            2. 创建新的 Swapchain
+            Create new swapchain.
         */
-
 
         m_Swapchain.Init(
             &m_Device,
@@ -706,18 +710,21 @@ namespace Daybreak
             << std::endl;
 
 
+
         /*
-            3. RenderPass
+            Recreate render pass.
         */
-
-
-        m_RenderPass.Shutdown();
-
 
         m_RenderPass.Init(
             m_Device.GetDevice(),
             m_Swapchain.GetImageFormat()
         );
+
+
+
+        /*
+            Recreate graphics pipeline.
+        */
 
         m_Pipeline.Init(
             m_Device.GetDevice(),
@@ -731,9 +738,8 @@ namespace Daybreak
 
 
         /*
-            4. Depth Buffer
+            Recreate depth resources.
         */
-
 
         m_DepthBuffer.Init(
             m_Device.GetDevice(),
@@ -744,9 +750,8 @@ namespace Daybreak
 
 
         /*
-            5. Framebuffer
+            Recreate framebuffers.
         */
-
 
         m_Framebuffer.Init(
             m_Device.GetDevice(),
@@ -759,9 +764,8 @@ namespace Daybreak
 
 
         /*
-            6. CommandBuffer重新录制
+            Re-record command buffers.
         */
-
 
         Daybreak::Mesh cube =
             Daybreak::Mesh::CreateCube();
@@ -785,20 +789,44 @@ namespace Daybreak
             cube.GetIndexCount()
         );
 
-        if (m_Camera) {
+
+
+        // Update camera projection after resize.
+        if (m_Camera)
+        {
+
             m_Camera->SetAspectRatio(
                 float(m_Swapchain.GetExtent().width) /
                 float(m_Swapchain.GetExtent().height)
             );
+
         }
+
     }
 
 
+
+
+
+    /**
+     * @brief Sets the active rendering camera.
+     *
+     * The camera provides:
+     *
+     * - View matrix
+     * - Projection matrix
+     *
+     * These matrices are uploaded to shaders through
+     * the uniform buffer.
+     *
+     * @param camera Camera instance used for rendering.
+     */
     void Daybreak::VulkanRenderer::SetCamera(
         Camera* camera
     )
     {
         m_Camera = camera;
     }
+
 
 }

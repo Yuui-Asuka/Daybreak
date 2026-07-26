@@ -4,11 +4,24 @@
 namespace Daybreak
 {
 
-
+    /**
+     * @brief Global Vulkan renderer instance.
+     *
+     * Renderer provides a static access layer while the actual
+     * rendering implementation is handled by VulkanRenderer.
+     */
     VulkanRenderer* Renderer::s_Renderer = nullptr;
 
 
 
+    /**
+     * @brief Initializes the rendering system.
+     *
+     * Creates the internal Vulkan renderer instance and initializes
+     * all rendering resources associated with the provided window.
+     *
+     * @param window GLFW window handle used for rendering.
+     */
     void Renderer::Init(
         GLFWwindow* window
     )
@@ -26,6 +39,12 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Shuts down the rendering system.
+     *
+     * Releases all Vulkan renderer resources and destroys the
+     * internal renderer instance.
+     */
     void Renderer::Shutdown()
     {
 
@@ -46,12 +65,27 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Renders one frame.
+     *
+     * Delegates frame rendering to the Vulkan renderer.
+     */
     void Renderer::DrawFrame()
     {
         s_Renderer->DrawFrame();
     }
 
-    void Daybreak::Renderer::SetCamera(
+
+
+    /**
+     * @brief Sets the active camera used for rendering.
+     *
+     * The camera data is forwarded to the Vulkan renderer,
+     * which uses it when updating rendering transformations.
+     *
+     * @param camera Camera instance used for view/projection data.
+     */
+    void Renderer::SetCamera(
         Camera* camera
     )
     {

@@ -4,115 +4,69 @@
 
 #include <vector>
 
+
 namespace Daybreak
 {
 
-    /*
-        VulkanFramebuffer
-
-        管理 Vulkan Framebuffer。
-
-
-        Framebuffer 是 RenderPass 的具体渲染目标。
-
-
-        关系：
-
-            Swapchain Image
-
-                  |
-                  v
-
-            ImageView
-
-                  |
-                  v
-
-            Framebuffer
-
-                  |
-                  v
-
-            RenderPass
-
-
-        RenderPass描述：
-
-            "怎么渲染"
-
-
-        Framebuffer描述：
-
-            "渲染到哪张图片"
-
-
-        当前结构：
-
-            一个Swapchain Image
-
-                    |
-
-            一个ImageView
-
-                    |
-
-            一个Framebuffer
-
-
-
-        Swapchain通常有多个Image：
-
-            Image[0]
-                |
-            Framebuffer[0]
-
-
-            Image[1]
-                |
-            Framebuffer[1]
-
-
-            Image[2]
-                |
-            Framebuffer[2]
-
-
-    */
+    /**
+     * @brief Manages Vulkan framebuffer resources.
+     *
+     * A framebuffer represents a collection of image views that are
+     * used as attachments during render pass execution.
+     *
+     * Relationship:
+     *
+     * Swapchain Image
+     *        |
+     *        v
+     * Image View
+     *        |
+     *        v
+     * Framebuffer
+     *        |
+     *        v
+     * Render Pass
+     *
+     *
+     * Render Pass defines:
+     *
+     * - How attachments are used.
+     * - Rendering operations.
+     * - Attachment transitions.
+     *
+     *
+     * Framebuffer defines:
+     *
+     * - Which image views are used as attachments.
+     *
+     *
+     * Typical swapchain setup:
+     *
+     * Image[0] -> Framebuffer[0]
+     *
+     * Image[1] -> Framebuffer[1]
+     *
+     * Image[2] -> Framebuffer[2]
+     */
     class VulkanFramebuffer
     {
     public:
 
-        /*
-            创建Framebuffer。
-
-
-            device:
-
-                Vulkan Logical Device。
-
-
-            renderPass:
-
-                与Framebuffer匹配的RenderPass。
-
-
-                创建Pipeline时也使用同一个RenderPass。
-
-
-            imageViews:
-
-                Swapchain Image Views。
-
-
-                每个ImageView创建一个Framebuffer。
-
-
-            extent:
-
-                Framebuffer宽高。
-
-
-        */
+        /**
+         * @brief Creates framebuffer resources.
+         *
+         * Each framebuffer is created from a swapchain image view
+         * and a depth image view.
+         *
+         * The attachment order must match the attachment order
+         * defined in the render pass.
+         *
+         * @param device Vulkan logical device.
+         * @param renderPass Compatible render pass.
+         * @param imageViews Swapchain color image views.
+         * @param extent Framebuffer resolution.
+         * @param depthImageView Depth attachment image view.
+         */
         void Init(
             VkDevice device,
             VkRenderPass renderPass,
@@ -122,52 +76,49 @@ namespace Daybreak
         );
 
 
-        /*
-            销毁所有Framebuffer。
-        */
+        /**
+         * @brief Destroys all framebuffer resources.
+         */
         void Shutdown();
 
 
-        /*
-            获取Framebuffer列表。
-
-
-            CommandBuffer录制时：
-
-                vkCmdBeginRenderPass()
-
-
-            需要指定当前Framebuffer。
-
-        */
+        /**
+         * @brief Returns all created framebuffers.
+         *
+         * Command buffers use these framebuffers when beginning
+         * a render pass.
+         *
+         * @return Collection of framebuffer handles.
+         */
         const std::vector<VkFramebuffer>& GetFramebuffers() const
         {
             return m_Framebuffers;
         }
 
 
+
     private:
 
-        /*
-            根据Swapchain ImageView创建Framebuffer。
-
-            一个ImageView对应一个Framebuffer。
-
-
-            例如：
-
-                Swapchain Image Count = 3
-
-
-                创建：
-
-                    Framebuffer[0]
-
-                    Framebuffer[1]
-
-                    Framebuffer[2]
-
-        */
+        /**
+         * @brief Creates framebuffer objects.
+         *
+         * Creates one framebuffer for each swapchain image view.
+         *
+         * Example:
+         *
+         * Swapchain image count = 3
+         *
+         * Creates:
+         *
+         * Framebuffer[0]
+         * Framebuffer[1]
+         * Framebuffer[2]
+         *
+         * @param renderPass Compatible render pass.
+         * @param imageViews Swapchain image views.
+         * @param extent Framebuffer dimensions.
+         * @param depthImageView Depth attachment image view.
+         */
         void CreateFramebuffers(
             VkRenderPass renderPass,
             const std::vector<VkImageView>& imageViews,
@@ -176,24 +127,23 @@ namespace Daybreak
         );
 
 
+
     private:
 
-        /*
-            Vulkan Logical Device。
-
-            Framebuffer属于Device资源。
-
-        */
+        /**
+         * @brief Vulkan logical device.
+         *
+         * Used for framebuffer creation and destruction.
+         */
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
 
-        /*
-            Swapchain对应的Framebuffer集合。
-
-            数量通常等于Swapchain Image数量。
-
-        */
+        /**
+         * @brief Collection of framebuffer handles.
+         *
+         * Usually contains one framebuffer per swapchain image.
+         */
         std::vector<VkFramebuffer> m_Framebuffers;
 
     };

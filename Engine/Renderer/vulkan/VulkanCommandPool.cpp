@@ -3,50 +3,56 @@
 #include <stdexcept>
 #include <iostream>
 
+
 namespace Daybreak
 {
 
+    /**
+     * @brief Initializes Vulkan command pool.
+     *
+     * A command pool manages the allocation and lifetime of
+     * command buffers.
+     *
+     * Command buffers allocated from this pool must be submitted
+     * to a queue belonging to the same queue family.
+     *
+     * @param device Vulkan logical device.
+     * @param graphicsQueueFamily Queue family index used for graphics commands.
+     */
     void VulkanCommandPool::Init(
         VkDevice device,
-        uint32_t graphicsQueueFamily)
+        uint32_t graphicsQueueFamily
+    )
     {
-        /*
-            保存Logical Device。
 
-            Command Pool属于Device资源。
-
-            创建和销毁Command Pool都需要VkDevice。
-        */
         m_Device = device;
 
 
+
         /*
-            创建Command Pool。
-
-            Command Buffer之后会从这里分配。
-
-        */
+         * Create command pool used for allocating command buffers.
+         */
         CreateCommandPool(
             graphicsQueueFamily
         );
+
     }
 
 
 
+    /**
+     * @brief Creates Vulkan command pool.
+     *
+     * The command pool defines:
+     *
+     * - Queue family that command buffers belong to.
+     * - Command buffer reset behavior.
+     */
     void VulkanCommandPool::CreateCommandPool(
-        uint32_t graphicsQueueFamily)
+        uint32_t graphicsQueueFamily
+    )
     {
-        /*
-            Command Pool创建信息。
 
-            主要指定：
-
-                1. 属于哪个Queue Family
-
-                2. Command Buffer行为
-
-
-        */
         VkCommandPoolCreateInfo poolInfo{};
 
 
@@ -55,46 +61,35 @@ namespace Daybreak
 
 
 
-        /*
-            指定Command Buffer提交目标。
-
-            当前：
-
-                Graphics Queue Family
-
-
-            因为Command Buffer里面包含：
-
-                vkCmdDraw()
-
-            所以必须属于Graphics Queue。
-
-        */
+        /**
+         * @brief Specify the queue family.
+         *
+         * Command buffers allocated from this pool can only be
+         * submitted to queues from this queue family.
+         *
+         * Graphics commands such as vkCmdDraw require a graphics
+         * capable queue family.
+         */
         poolInfo.queueFamilyIndex =
             graphicsQueueFamily;
 
 
 
-        /*
-            Command Pool Flags。
-
-
-            VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT:
-
-
-                允许单独Reset Command Buffer。
-
-
-            如果没有这个flag：
-
-                只能Reset整个Command Pool。
-
-
-            对于每帧重新录制Command Buffer：
-
-                这个选项比较方便。
-
-        */
+        /**
+         * @brief Allow individual command buffer reset.
+         *
+         * Without this flag:
+         *
+         * vkResetCommandPool()
+         *
+         * is required to reset command buffers.
+         *
+         * With this flag:
+         *
+         * vkResetCommandBuffer()
+         *
+         * can reset individual command buffers.
+         */
         poolInfo.flags =
             VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
@@ -116,37 +111,26 @@ namespace Daybreak
         std::cout
             << "Command Pool Created!"
             << std::endl;
+
     }
 
 
 
+    /**
+     * @brief Destroys command pool.
+     *
+     * Destroying a command pool automatically releases all
+     * command buffers allocated from it.
+     *
+     * The command pool must be destroyed after all command buffers
+     * using it are no longer needed.
+     */
     void VulkanCommandPool::Shutdown()
     {
-        /*
-            销毁Command Pool。
-
-
-            注意：
-
-            Command Pool销毁时：
-
-                所有从它分配的Command Buffer
-
-                会自动失效。
-
-
-            所以销毁顺序：
-
-                CommandBuffer
-
-                    ↓
-
-                CommandPool
-
-        */
 
         if (m_CommandPool != VK_NULL_HANDLE)
         {
+
             vkDestroyCommandPool(
                 m_Device,
                 m_CommandPool,
@@ -156,7 +140,9 @@ namespace Daybreak
 
             m_CommandPool =
                 VK_NULL_HANDLE;
+
         }
+
     }
 
 }

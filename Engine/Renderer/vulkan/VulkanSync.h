@@ -2,104 +2,108 @@
 
 #include <vulkan/vulkan.h>
 
+
 namespace Daybreak
 {
 
-    /*
-        VulkanSync
-
-        管理 Vulkan 渲染同步对象。
-
-        Vulkan 是异步执行模型：
-
-            CPU
-             |
-             v
-        提交 CommandBuffer
-             |
-             v
-            GPU执行
-
-        CPU不能直接假设GPU已经完成。
-
-        因此需要：
-
-            Semaphore:
-                用于GPU之间的同步。
-
-            Fence:
-                用于CPU等待GPU完成。
-    */
+    /**
+     * @brief Manages Vulkan rendering synchronization objects.
+     *
+     * Vulkan uses an asynchronous execution model where CPU and GPU
+     * operate independently.
+     *
+     * Synchronization primitives are required to coordinate:
+     *
+     * - Swapchain image acquisition.
+     * - Command buffer execution.
+     * - Image presentation.
+     *
+     * This class manages:
+     *
+     * - Semaphores for GPU queue synchronization.
+     * - Fence for CPU-GPU frame synchronization.
+     */
     class VulkanSync
     {
     public:
 
-        /*
-            初始化同步对象。
-
-            device:
-                Vulkan Logical Device。
-        */
+        /**
+         * @brief Initializes synchronization objects.
+         *
+         * Creates the synchronization resources required for rendering.
+         *
+         * @param device Vulkan logical device used to create resources.
+         */
         void Init(
             VkDevice device
         );
 
 
-        /*
-            销毁同步对象。
-        */
+        /**
+         * @brief Releases all synchronization resources.
+         *
+         * Synchronization objects must be destroyed before destroying
+         * the Vulkan logical device.
+         */
         void Shutdown();
 
 
-        /*
-            获取Image Available Semaphore。
-
-            用于：
-
-                vkAcquireNextImageKHR()
-
-            表示Swapchain Image已经可以使用。
-        */
+        /**
+         * @brief Returns the semaphore signaled after swapchain image acquisition.
+         *
+         * Used with:
+         *
+         * vkAcquireNextImageKHR()
+         *
+         * The rendering submission waits for this semaphore before
+         * accessing the acquired swapchain image.
+         *
+         * @return Image acquisition semaphore.
+         */
         VkSemaphore GetImageAvailableSemaphore() const
         {
             return m_ImageAvailableSemaphore;
         }
 
 
-        /*
-            获取Render Finished Semaphore。
-
-            用于：
-
-                vkQueuePresentKHR()
-
-            表示GPU已经完成渲染。
-        */
+        /**
+         * @brief Returns the semaphore signaled after rendering completes.
+         *
+         * Used by presentation:
+         *
+         * vkQueuePresentKHR()
+         *
+         * The presentation queue waits for this semaphore before
+         * displaying the rendered image.
+         *
+         * @return Render completion semaphore.
+         */
         VkSemaphore GetRenderFinishedSemaphore() const
         {
             return m_RenderFinishedSemaphore;
         }
 
 
-        /*
-            获取In Flight Fence。
-
-            用于：
-
-                CPU等待GPU完成当前Frame。
-
-            DrawFrame流程：
-
-                vkWaitForFences()
-
-                    ↓
-
-                vkResetFences()
-
-                    ↓
-
-                vkQueueSubmit()
-        */
+        /**
+         * @brief Returns the frame completion fence.
+         *
+         * The CPU waits on this fence to ensure that the previous
+         * frame submission has completed before reusing resources.
+         *
+         * Typical frame flow:
+         *
+         * vkWaitForFences()
+         *
+         *      |
+         *
+         * vkResetFences()
+         *
+         *      |
+         *
+         * vkQueueSubmit()
+         *
+         * @return Frame synchronization fence.
+         */
         VkFence GetInFlightFence() const
         {
             return m_InFlightFence;
@@ -108,53 +112,59 @@ namespace Daybreak
 
     private:
 
-        /*
-            创建同步对象：
-
-                ImageAvailable Semaphore
-
-                RenderFinished Semaphore
-
-                InFlight Fence
-        */
+        /**
+         * @brief Creates rendering synchronization objects.
+         *
+         * Creates:
+         *
+         * - Image available semaphore.
+         * - Render finished semaphore.
+         * - In-flight fence.
+         */
         void CreateSyncObjects();
 
 
     private:
 
-        /*
-            Vulkan Logical Device。
-        */
+        /**
+         * @brief Vulkan logical device used for resource management.
+         */
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
 
-        /*
-            Swapchain Image获取完成信号。
-
-            vkAcquireNextImageKHR()
-            会触发该Semaphore。
-        */
+        /**
+         * @brief Signals that a swapchain image has been acquired.
+         *
+         * The semaphore is signaled by:
+         *
+         * vkAcquireNextImageKHR()
+         *
+         * and waited by the graphics queue submission.
+         */
         VkSemaphore m_ImageAvailableSemaphore =
             VK_NULL_HANDLE;
 
 
-        /*
-            渲染完成信号。
-
-            GPU完成CommandBuffer后触发。
-
-            Present Queue等待该Semaphore。
-        */
+        /**
+         * @brief Signals completion of rendering commands.
+         *
+         * The graphics queue signals this semaphore after finishing
+         * command buffer execution.
+         *
+         * The presentation queue waits for this semaphore before
+         * presenting the image.
+         */
         VkSemaphore m_RenderFinishedSemaphore =
             VK_NULL_HANDLE;
 
 
-        /*
-            CPU-GPU同步Fence。
-
-            CPU通过它判断GPU是否完成上一帧。
-        */
+        /**
+         * @brief Synchronizes CPU execution with GPU completion.
+         *
+         * The CPU waits on this fence before submitting another frame
+         * that may reuse GPU resources.
+         */
         VkFence m_InFlightFence =
             VK_NULL_HANDLE;
 

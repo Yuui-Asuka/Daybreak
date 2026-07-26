@@ -6,7 +6,31 @@
 namespace Daybreak
 {
 
-
+    /**
+     * @brief Creates a Vulkan descriptor set layout.
+     *
+     * A descriptor set layout defines the structure of resources
+     * that can be bound to a shader.
+     *
+     * It describes:
+     *
+     * - Descriptor binding index.
+     * - Descriptor type.
+     * - Descriptor count.
+     * - Shader stages that access the resource.
+     *
+     * Current layout:
+     *
+     * Binding 0:
+     *     Uniform Buffer
+     *     Vertex Shader access
+     *
+     * Binding 1:
+     *     Combined Image Sampler
+     *     Fragment Shader access
+     *
+     * The layout must match the descriptor declarations in GLSL.
+     */
     void VulkanDescriptorSetLayout::Init(
         VkDevice device
     )
@@ -16,35 +40,33 @@ namespace Daybreak
 
 
 
-        /*
-            描述一个 Binding。
-
-            对应 Shader:
-
-            layout(binding = 0) uniform UBO
-
-        */
-
+        /**
+         * @brief Uniform buffer binding.
+         *
+         * Matches shader declaration:
+         *
+         * layout(binding = 0) uniform UniformBufferObject
+         */
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
 
 
-
-        uboLayoutBinding.binding = 0;
-
+        uboLayoutBinding.binding =
+            0;
 
 
         uboLayoutBinding.descriptorType =
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
 
+        uboLayoutBinding.descriptorCount =
+            1;
 
-        uboLayoutBinding.descriptorCount = 1;
 
-
-
+        /*
+         * UBO is accessed from the vertex shader.
+         */
         uboLayoutBinding.stageFlags =
             VK_SHADER_STAGE_VERTEX_BIT;
-
 
 
         uboLayoutBinding.pImmutableSamplers =
@@ -52,19 +74,31 @@ namespace Daybreak
 
 
 
+        /**
+         * @brief Texture sampler binding.
+         *
+         * Matches shader declaration:
+         *
+         * layout(binding = 1) uniform sampler2D textureSampler;
+         */
         VkDescriptorSetLayoutBinding samplerLayoutBinding{};
 
 
-        samplerLayoutBinding.binding = 1;
+        samplerLayoutBinding.binding =
+            1;
 
 
         samplerLayoutBinding.descriptorType =
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
 
-        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.descriptorCount =
+            1;
 
 
+        /*
+         * Texture sampling is performed in the fragment shader.
+         */
         samplerLayoutBinding.stageFlags =
             VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -72,12 +106,6 @@ namespace Daybreak
         samplerLayoutBinding.pImmutableSamplers =
             nullptr;
 
-
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-
-
-        layoutInfo.sType =
-            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
 
         VkDescriptorSetLayoutBinding bindings[] =
@@ -88,7 +116,18 @@ namespace Daybreak
 
 
 
-        layoutInfo.bindingCount = 2;
+        /**
+         * @brief Descriptor set layout creation information.
+         */
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+
+
+        layoutInfo.sType =
+            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+
+        layoutInfo.bindingCount =
+            2;
 
 
         layoutInfo.pBindings =
@@ -112,6 +151,12 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Destroys descriptor set layout.
+     *
+     * The layout must be destroyed after all descriptor sets
+     * and pipelines using it are no longer needed.
+     */
     void VulkanDescriptorSetLayout::Shutdown()
     {
 
@@ -127,9 +172,9 @@ namespace Daybreak
 
             m_Layout =
                 VK_NULL_HANDLE;
+
         }
 
     }
-
 
 }

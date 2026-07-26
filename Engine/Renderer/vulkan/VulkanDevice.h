@@ -6,46 +6,41 @@
 namespace Daybreak
 {
 
-
     /**
      * @class VulkanDevice
      *
-     * @brief Vulkan GPU Device 管理类
+     * @brief Manages Vulkan GPU device resources.
      *
-     * 负责管理 Vulkan 与 GPU 之间的连接。
+     * Responsible for managing the connection between Vulkan
+     * and the physical GPU.
      *
-     * 主要职责:
+     * Main responsibilities:
      *
-     * - 选择 Physical Device（物理 GPU）
-     * - 创建 Logical Device（逻辑设备）
-     * - 获取 Graphics Queue
-     * - 获取 Present Queue
+     * - Selecting a physical device.
+     * - Creating a logical device.
+     * - Retrieving graphics and presentation queues.
      *
-     *
-     * Vulkan 设备层级关系:
-     *
+     * Vulkan device hierarchy:
      *
      * VkInstance
      *      |
-     *      ↓
+     *      v
      * VkPhysicalDevice
      *      |
-     *      ↓
+     *      v
      * VkDevice
      *      |
-     *      ↓
+     *      v
      * VkQueue
      *
-     *
      * Physical Device:
-     *     表示真实 GPU 硬件
+     *     Represents the actual GPU hardware.
      *
      * Logical Device:
-     *     应用程序访问 GPU 的接口
+     *     Provides an interface for applications to access the GPU.
      *
      * Queue:
-     *     GPU 执行命令的通道
-     *
+     *     A channel used for submitting GPU commands.
      */
     class VulkanDevice
     {
@@ -54,17 +49,17 @@ namespace Daybreak
 
 
         /**
-         * @brief 初始化 Vulkan Device
+         * @brief Initializes the Vulkan device.
          *
-         * 初始化流程:
+         * Initialization steps:
          *
-         * 1. 保存 Instance 和 Surface
-         * 2. 选择合适 GPU
-         * 3. 创建 Logical Device
-         * 4. 获取 GPU Queue
+         * 1. Store Vulkan instance and surface handles.
+         * 2. Select a suitable physical device.
+         * 3. Create the logical device.
+         * 4. Retrieve GPU queues.
          *
-         * @param instance Vulkan Instance
-         * @param surface Window Surface
+         * @param instance Vulkan instance used for device initialization.
+         * @param surface Window surface used for presentation support.
          */
         void Init(
             VkInstance instance,
@@ -73,37 +68,29 @@ namespace Daybreak
 
 
         /**
-         * @brief 销毁 Vulkan Device
+         * @brief Releases Vulkan device resources.
          *
-         * 销毁:
+         * Destroys the logical device.
          *
-         * - VkDevice
+         * All resources created from this device, including:
          *
-         * 注意:
+         * - Swapchain
+         * - Pipeline
+         * - Framebuffer
+         * - CommandBuffer
          *
-         * Device 必须在依赖它的资源之后销毁:
-         *
-         * Swapchain
-         * Pipeline
-         * Framebuffer
-         * CommandBuffer
-         *
-         * 都需要先释放。
+         * must be released before destroying the device.
          */
         void Shutdown();
 
 
 
         /**
-         * @brief 获取当前选择的 Physical Device
+         * @brief Retrieves the selected physical device.
          *
-         * Physical Device 对应实际 GPU。
+         * The physical device represents the actual GPU hardware.
          *
-         * 例如:
-         *
-         * NVIDIA RTX 3060
-         * AMD Radeon
-         *
+         * @return VkPhysicalDevice Selected GPU handle.
          */
         VkPhysicalDevice GetPhysicalDevice() const
         {
@@ -113,16 +100,16 @@ namespace Daybreak
 
 
         /**
-         * @brief 获取 Vulkan Logical Device
+         * @brief Retrieves the Vulkan logical device.
          *
-         * VkDevice 是创建:
+         * The logical device is used to create Vulkan resources:
          *
          * - Pipeline
          * - Buffer
          * - Image
          * - CommandPool
          *
-         * 等 Vulkan 资源的核心对象。
+         * @return VkDevice Logical device handle.
          */
         VkDevice GetDevice() const
         {
@@ -132,14 +119,15 @@ namespace Daybreak
 
 
         /**
-         * @brief 获取 Graphics Queue
+         * @brief Retrieves the graphics queue.
          *
-         * Graphics Queue 用于提交:
+         * The graphics queue is used for submitting:
          *
          * - CommandBuffer
-         * - Draw Command
-         * - Render Command
+         * - Draw commands
+         * - Render commands
          *
+         * @return VkQueue Graphics queue handle.
          */
         VkQueue GetGraphicsQueue() const
         {
@@ -149,16 +137,14 @@ namespace Daybreak
 
 
         /**
-         * @brief 获取 Graphics Queue Family Index
+         * @brief Retrieves the graphics queue family index.
          *
-         * Queue Family 表示 GPU 支持的一类 Queue。
-         *
-         * 创建:
+         * Queue family index is required when creating:
          *
          * - CommandPool
-         * - Queue
+         * - Device queues
          *
-         * 时需要该索引。
+         * @return uint32_t Graphics queue family index.
          */
         uint32_t GetGraphicsQueueFamily() const
         {
@@ -168,19 +154,15 @@ namespace Daybreak
 
 
         /**
-         * @brief 获取 Present Queue
+         * @brief Retrieves the presentation queue.
          *
-         * Present Queue 用于:
+         * The presentation queue is responsible for presenting
+         * swapchain images to the window surface.
          *
-         * 将 Swapchain Image 提交到窗口显示。
+         * In many GPUs, the graphics queue and presentation queue
+         * can be the same queue.
          *
-         * 通常:
-         *
-         * Graphics Queue
-         * 和
-         * Present Queue
-         *
-         * 可以是同一个 Queue。
+         * @return VkQueue Presentation queue handle.
          */
         VkQueue GetPresentQueue() const
         {
@@ -193,28 +175,23 @@ namespace Daybreak
 
 
         /**
-         * @brief 查找并选择合适的 GPU
+         * @brief Selects a suitable physical GPU.
          *
-         * 检查:
-         *
-         * - GPU 是否支持 Vulkan
-         * - GPU 类型
-         * - Queue Family
-         *
+         * Checks available GPUs and selects a device that supports
+         * required Vulkan features and queue capabilities.
          */
         void PickPhysicalDevice();
 
 
 
         /**
-         * @brief 创建 Logical Device
+         * @brief Creates the Vulkan logical device.
          *
-         * 创建:
+         * Creates:
          *
          * - VkDevice
-         * - Graphics Queue
-         * - Present Queue
-         *
+         * - Graphics queue
+         * - Presentation queue
          */
         void CreateLogicalDevice();
 
@@ -224,71 +201,64 @@ namespace Daybreak
 
 
         /**
-         * Vulkan Instance
+         * @brief Vulkan instance handle.
          *
-         * 来自 VulkanContext。
-         *
-         * 用于查询 GPU。
+         * Used to query available physical devices.
          */
         VkInstance m_Instance = VK_NULL_HANDLE;
 
 
 
         /**
-         * Window Surface
+         * @brief Vulkan window surface handle.
          *
-         * 用于检查 GPU 是否支持窗口显示。
-         *
-         * Swapchain 创建时也需要。
+         * Used to check presentation support and create swapchains.
          */
         VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
 
 
         /**
-         * Physical Device
+         * @brief Selected physical GPU handle.
          *
-         * 表示真实 GPU。
-         *
-         * 例如:
-         *
-         * NVIDIA RTX 3060 Laptop GPU
+         * Represents the actual graphics hardware.
          */
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
 
 
         /**
-         * Logical Device
+         * @brief Vulkan logical device handle.
          *
-         * Vulkan 应用程序主要使用的 GPU 接口。
+         * Main interface used by the application to access GPU resources.
          */
         VkDevice m_Device = VK_NULL_HANDLE;
 
 
 
         /**
-         * Graphics Queue
+         * @brief Graphics queue handle.
          *
-         * 负责执行图形渲染命令。
+         * Used for executing rendering commands on the GPU.
          */
         VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
 
 
 
         /**
-         * Present Queue
+         * @brief Presentation queue handle.
          *
-         * 负责将渲染结果显示到窗口。
+         * Used for presenting rendered images to the window.
          */
         VkQueue m_PresentQueue = VK_NULL_HANDLE;
 
 
 
         /**
-         * Graphics Queue Family Index
+         * @brief Graphics queue family index.
          *
-         * 指向支持 VK_QUEUE_GRAPHICS_BIT 的 Queue Family。
+         * Identifies the queue family supporting
+         * VK_QUEUE_GRAPHICS_BIT operations.
          */
         uint32_t m_GraphicsQueueFamily = 0;
 

@@ -2,48 +2,51 @@
 
 #include <vulkan/vulkan.h>
 
+
 namespace Daybreak
 {
 
-    /*
-        VulkanPipeline
-
-        管理 Vulkan Graphics Pipeline。
-
-        Pipeline 描述 GPU 如何执行一次绘制：
-
-        Shader
-            ↓
-        Vertex Input
-            ↓
-        Input Assembly
-            ↓
-        Rasterizer
-            ↓
-        Fragment Output
-    */
+    /**
+     * @class VulkanPipeline
+     *
+     * @brief Manages Vulkan graphics pipeline resources.
+     *
+     * A graphics pipeline defines how the GPU processes rendering commands.
+     *
+     * Pipeline stages:
+     *
+     * Shader
+     *     |
+     *     v
+     * Vertex Input
+     *     |
+     *     v
+     * Input Assembly
+     *     |
+     *     v
+     * Rasterization
+     *     |
+     *     v
+     * Fragment Output
+     */
     class VulkanPipeline
     {
     public:
 
-        /*
-            创建 Graphics Pipeline
 
-            device:
-                Vulkan Logical Device
-
-            extent:
-                Swapchain尺寸
-
-            renderPass:
-                Pipeline绑定的RenderPass
-
-            vertShader:
-                Vertex Shader Module
-
-            fragShader:
-                Fragment Shader Module
-        */
+        /**
+         * @brief Initializes the graphics pipeline.
+         *
+         * Creates a Vulkan graphics pipeline using the specified
+         * shaders, render pass, and pipeline layout.
+         *
+         * @param device Vulkan logical device used for pipeline creation.
+         * @param extent Render target size.
+         * @param renderPass Render pass associated with the pipeline.
+         * @param vertexShader Vertex shader module.
+         * @param fragmentShader Fragment shader module.
+         * @param descriptorSetLayout Descriptor set layout accessible by shaders.
+         */
         void Init(
             VkDevice device,
             VkExtent2D extent,
@@ -53,42 +56,66 @@ namespace Daybreak
             VkDescriptorSetLayout descriptorSetLayout
         );
 
-        /*
-            销毁Pipeline资源
-        */
+
+        /**
+         * @brief Releases graphics pipeline resources.
+         *
+         * Destroys the graphics pipeline and pipeline layout.
+         */
         void Shutdown();
 
-        /*
-            获取Graphics Pipeline
-        */
+
+
+        /**
+         * @brief Retrieves the graphics pipeline.
+         *
+         * @return VkPipeline Graphics pipeline handle.
+         */
         VkPipeline GetPipeline() const
         {
             return m_Pipeline;
         }
 
-        /*
-            获取Pipeline Layout
-        */
+
+
+        /**
+         * @brief Retrieves the pipeline layout.
+         *
+         * The pipeline layout describes resources accessible by shaders,
+         * such as descriptor sets and push constants.
+         *
+         * @return VkPipelineLayout Pipeline layout handle.
+         */
         VkPipelineLayout GetPipelineLayout() const
         {
             return m_PipelineLayout;
         }
 
+
+
     private:
 
-        /*
-            创建Graphics Pipeline
 
-            包含：
-
-            - Shader Stage
-            - Vertex Input
-            - Input Assembly
-            - Viewport
-            - Rasterizer
-            - Multisampling
-            - Color Blend
-        */
+        /**
+         * @brief Creates the Vulkan graphics pipeline.
+         *
+         * Configures:
+         *
+         * - Shader stages
+         * - Vertex input
+         * - Input assembly
+         * - Viewport
+         * - Rasterization
+         * - Multisampling
+         * - Color blending
+         *
+         * @param device Vulkan logical device used for creation.
+         * @param extent Render target size.
+         * @param renderPass Render pass associated with the pipeline.
+         * @param vertexShader Vertex shader module.
+         * @param fragmentShader Fragment shader module.
+         * @param descriptorSetLayout Shader resource layout.
+         */
         void CreatePipeline(
             VkDevice device,
             VkExtent2D extent,
@@ -98,16 +125,35 @@ namespace Daybreak
             VkDescriptorSetLayout descriptorSetLayout
         );
 
+
     private:
 
-        // Vulkan Logical Device
+
+        /**
+         * @brief Vulkan logical device handle.
+         *
+         * Used to create and destroy pipeline resources.
+         */
         VkDevice m_Device = VK_NULL_HANDLE;
 
-        // Graphics Pipeline
+
+
+        /**
+         * @brief Vulkan graphics pipeline handle.
+         *
+         * Defines the GPU rendering state used for drawing.
+         */
         VkPipeline m_Pipeline = VK_NULL_HANDLE;
 
-        // Pipeline Layout
+
+
+        /**
+         * @brief Vulkan pipeline layout handle.
+         *
+         * Describes resources available to shaders.
+         */
         VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+
     };
 
 }

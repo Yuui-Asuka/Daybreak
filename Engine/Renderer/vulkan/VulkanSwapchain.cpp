@@ -1,39 +1,32 @@
 #include "VulkanDevice.h"
+#include "VulkanSwapchain.h"
 
 #include <vector>
 #include <iostream>
-#include <GLFW/glfw3.h>
-#include "VulkanSwapchain.h"
-
 #include <algorithm>
+
+#include <GLFW/glfw3.h>
 
 
 namespace Daybreak
 {
 
-
-    /*
-        初始化Swapchain
-
-        Swapchain创建流程：
-
-        1. 保存Device、Surface、Window
-
-        2. 查询GPU支持能力
-
-        3. 根据支持情况选择：
-
-            - Image Format
-            - Present Mode
-            - Extent
-
-        4. 创建Swapchain
-
-        5. 获取Swapchain Images
-
-        6. 创建Image Views
-
-    */
+    /**
+     * @brief Initializes the Vulkan swapchain.
+     *
+     * The initialization process:
+     *
+     * 1. Store device, surface and window references.
+     * 2. Query GPU swapchain capabilities.
+     * 3. Select image format, present mode and extent.
+     * 4. Create swapchain.
+     * 5. Retrieve swapchain images.
+     * 6. Create image views.
+     *
+     * @param device Vulkan device manager used to access GPU resources.
+     * @param surface Window surface used by the swapchain.
+     * @param window GLFW window used to query framebuffer size.
+     */
     void VulkanSwapchain::Init(
         VulkanDevice* device,
         VkSurfaceKHR surface,
@@ -46,54 +39,29 @@ namespace Daybreak
 
         m_Window = window;
 
-
-        /*
-            查询当前GPU对于当前窗口Surface的支持情况
-
-            包括：
-
-            - 支持的图片格式
-            - 支持的刷新模式
-            - 最大图片数量
-            - 图片尺寸限制
-
-        */
         SwapchainSupportDetails details =
             QuerySwapchainSupport();
 
-
-
         CreateSwapchain(details);
+
     }
 
 
-
-
-    /*
-        选择Swapchain图片格式
-
-
-        Vulkan支持很多颜色格式：
-
-        例如：
-
-        VK_FORMAT_B8G8R8A8_SRGB
-
-        是Windows窗口常用格式。
-
-
-        如果找到最佳格式则返回。
-
-        否则使用GPU提供的第一个格式。
-
-    */
+    /**
+     * @brief Selects the preferred surface format.
+     *
+     * Prefers VK_FORMAT_B8G8R8A8_SRGB with
+     * SRGB nonlinear color space.
+     *
+     * @param formats Available surface formats.
+     *
+     * @return VkSurfaceFormatKHR Selected surface format.
+     */
     VkSurfaceFormatKHR VulkanSwapchain::ChooseSurfaceFormat(
         const std::vector<VkSurfaceFormatKHR>& formats)
     {
-
         for (const auto& format : formats)
         {
-
             if (format.format ==
                 VK_FORMAT_B8G8R8A8_SRGB &&
 
@@ -102,52 +70,30 @@ namespace Daybreak
             {
                 return format;
             }
-
         }
-
-
         return formats[0];
     }
 
 
-
-
-
-    /*
-        选择Present模式
-
-
-        Present Mode决定GPU如何把图片提交到屏幕。
-
-
-        MAILBOX:
-
-            类似三缓冲
-
-            优点：
-                延迟低
-                不容易撕裂
-
-
-        FIFO:
-
-            类似VSync
-
-            所有GPU必须支持
-
-    */
+    /**
+     * @brief Selects the preferred presentation mode.
+     *
+     * Uses MAILBOX mode when available for lower latency.
+     * Falls back to FIFO mode which is guaranteed to exist.
+     *
+     * @param presentModes Available presentation modes.
+     *
+     * @return VkPresentModeKHR Selected presentation mode.
+     */
     VkPresentModeKHR VulkanSwapchain::ChoosePresentMode(
         const std::vector<VkPresentModeKHR>& presentModes)
     {
-
         for (const auto& mode : presentModes)
         {
-
             if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
             {
                 return mode;
             }
-
         }
 
 
@@ -155,32 +101,22 @@ namespace Daybreak
     }
 
 
-
-
-
-    /*
-        选择Swapchain尺寸
-
-
-        有些Surface会直接指定尺寸：
-
-            currentExtent != UINT32_MAX
-
-
-        如果没有指定：
-
-            根据窗口大小计算。
-
-
-        最后使用clamp限制在GPU支持范围内。
-
-    */
+    /**
+     * @brief Calculates the swapchain image extent.
+     *
+     * Uses the surface-provided extent when available.
+     * Otherwise calculates the extent from the window size
+     * and clamps it to GPU supported limits.
+     *
+     * @param capabilities Surface capabilities provided by the GPU.
+     *
+     * @return VkExtent2D Selected swapchain image size.
+     */
     VkExtent2D VulkanSwapchain::ChooseExtent(
         const VkSurfaceCapabilitiesKHR& capabilities)
     {
 
-        if (capabilities.currentExtent.width
-            != UINT32_MAX)
+        if (capabilities.currentExtent.width != UINT32_MAX)
         {
             return capabilities.currentExtent;
         }
@@ -203,7 +139,6 @@ namespace Daybreak
         VkExtent2D extent =
         {
             static_cast<uint32_t>(width),
-
             static_cast<uint32_t>(height)
         };
 
@@ -212,9 +147,7 @@ namespace Daybreak
         extent.width =
             std::clamp(
                 extent.width,
-
                 capabilities.minImageExtent.width,
-
                 capabilities.maxImageExtent.width
             );
 
@@ -223,9 +156,7 @@ namespace Daybreak
         extent.height =
             std::clamp(
                 extent.height,
-
                 capabilities.minImageExtent.height,
-
                 capabilities.maxImageExtent.height
             );
 
@@ -235,31 +166,17 @@ namespace Daybreak
 
 
 
-
-
-
-    /*
-        查询Swapchain支持信息
-
-
-        Vulkan创建Swapchain之前：
-
-        必须知道GPU支持什么。
-
-
-        查询三部分：
-
-
-        1.
-        Surface能力
-
-        2.
-        图片格式
-
-        3.
-        Present模式
-
-    */
+    /**
+     * @brief Queries GPU swapchain support information.
+     *
+     * Retrieves:
+     *
+     * - Surface capabilities
+     * - Supported image formats
+     * - Supported presentation modes
+     *
+     * @return SwapchainSupportDetails GPU swapchain capabilities.
+     */
     SwapchainSupportDetails
         VulkanSwapchain::QuerySwapchainSupport()
     {
@@ -268,39 +185,24 @@ namespace Daybreak
 
 
 
-        /*
-            查询Surface能力
-
-        */
+        // Query surface capabilities.
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-
             m_Device->GetPhysicalDevice(),
-
             m_Surface,
-
             &details.Capabilities
-
         );
 
 
 
-
-
-        /*
-            查询支持格式数量
-
-        */
         uint32_t formatCount = 0;
 
 
+
+        // Query supported surface formats.
         vkGetPhysicalDeviceSurfaceFormatsKHR(
-
             m_Device->GetPhysicalDevice(),
-
             m_Surface,
-
             &formatCount,
-
             nullptr
         );
 
@@ -315,13 +217,9 @@ namespace Daybreak
 
 
             vkGetPhysicalDeviceSurfaceFormatsKHR(
-
                 m_Device->GetPhysicalDevice(),
-
                 m_Surface,
-
                 &formatCount,
-
                 details.Formats.data()
             );
 
@@ -329,26 +227,15 @@ namespace Daybreak
 
 
 
-
-
-
-
-        /*
-            查询Present模式
-
-        */
-
         uint32_t presentModeCount = 0;
 
 
+
+        // Query supported presentation modes.
         vkGetPhysicalDeviceSurfacePresentModesKHR(
-
             m_Device->GetPhysicalDevice(),
-
             m_Surface,
-
             &presentModeCount,
-
             nullptr
         );
 
@@ -363,58 +250,32 @@ namespace Daybreak
 
 
             vkGetPhysicalDeviceSurfacePresentModesKHR(
-
                 m_Device->GetPhysicalDevice(),
-
                 m_Surface,
-
                 &presentModeCount,
-
                 details.PresentModes.data()
-
             );
 
         }
 
 
         return details;
+
     }
 
 
 
-
-
-
-    /*
-        创建Swapchain
-
-
-        Swapchain就是：
-
-        GPU渲染结果暂存的图片队列。
-
-
-
-        例如：
-
-        三缓冲：
-
-        Image0
-
-        Image1
-
-        Image2
-
-
-        GPU渲染其中一张，
-
-        另外两张等待显示。
-
-    */
+    /**
+     * @brief Creates the Vulkan swapchain.
+     *
+     * The swapchain manages a collection of images used
+     * for rendering and presenting frames to the screen.
+     *
+     * @param details Swapchain capability information.
+     */
     void VulkanSwapchain::CreateSwapchain(
         const SwapchainSupportDetails& details)
     {
-
 
         VkSurfaceFormatKHR surfaceFormat =
             ChooseSurfaceFormat(
@@ -446,18 +307,6 @@ namespace Daybreak
 
 
 
-
-
-        /*
-            创建多少张Swapchain Image
-
-            通常：
-
-            min + 1
-
-            可以减少GPU等待。
-
-        */
         uint32_t imageCount =
             details.Capabilities.minImageCount + 1;
 
@@ -472,7 +321,6 @@ namespace Daybreak
 
 
 
-
         VkSwapchainCreateInfoKHR createInfo{};
 
 
@@ -480,132 +328,84 @@ namespace Daybreak
             VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 
 
-
         createInfo.surface =
             m_Surface;
-
 
 
         createInfo.minImageCount =
             imageCount;
 
 
-
         createInfo.imageFormat =
             surfaceFormat.format;
-
 
 
         createInfo.imageColorSpace =
             surfaceFormat.colorSpace;
 
 
-
         createInfo.imageExtent =
             extent;
-
 
 
         createInfo.imageArrayLayers =
             1;
 
 
-
-        /*
-            Render目标
-
-            COLOR_ATTACHMENT表示：
-
-            这些Image会作为颜色输出。
-
-        */
         createInfo.imageUsage =
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
 
 
         createInfo.imageSharingMode =
             VK_SHARING_MODE_EXCLUSIVE;
 
 
-
         createInfo.preTransform =
             details.Capabilities.currentTransform;
-
 
 
         createInfo.compositeAlpha =
             VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
 
-
         createInfo.presentMode =
             presentMode;
-
-
 
         createInfo.clipped =
             VK_TRUE;
 
-
-
         createInfo.oldSwapchain =
             VK_NULL_HANDLE;
 
-
-
         if (vkCreateSwapchainKHR(
-
             m_Device->GetDevice(),
-
             &createInfo,
-
             nullptr,
-
-            &m_Swapchain
-
-        ) != VK_SUCCESS)
+            &m_Swapchain)
+            != VK_SUCCESS)
         {
-
             throw std::runtime_error(
                 "Failed to create Swapchain!"
             );
-
         }
-
-
 
         std::cout
             << "Swapchain Created!"
             << std::endl;
 
-
-
         GetSwapchainImages();
-
 
         CreateImageViews();
 
     }
 
 
-
-
-
-
-    /*
-        获取Swapchain中的Image
-
-
-        注意：
-
-        Image不是我们创建。
-
-        是Swapchain内部创建。
-
-        我们只是获取句柄。
-
-    */
+    /**
+     * @brief Retrieves swapchain images.
+     *
+     * Swapchain owns the images.
+     * This function only retrieves their handles.
+     */
     void VulkanSwapchain::GetSwapchainImages()
     {
 
@@ -614,15 +414,10 @@ namespace Daybreak
 
 
         vkGetSwapchainImagesKHR(
-
             m_Device->GetDevice(),
-
             m_Swapchain,
-
             &imageCount,
-
             nullptr
-
         );
 
 
@@ -634,15 +429,10 @@ namespace Daybreak
 
 
         vkGetSwapchainImagesKHR(
-
             m_Device->GetDevice(),
-
             m_Swapchain,
-
             &imageCount,
-
             m_Images.data()
-
         );
 
 
@@ -659,24 +449,13 @@ namespace Daybreak
 
 
 
-    /*
-        创建ImageView
 
-
-        Image:
-
-            GPU实际图片
-
-
-        ImageView:
-
-            告诉Vulkan如何访问这个Image
-
-
-
-        RenderPass绑定的是ImageView。
-
-    */
+    /**
+     * @brief Creates image views for swapchain images.
+     *
+     * Image views describe how Vulkan accesses images.
+     * Render passes use image views as rendering targets.
+     */
     void VulkanSwapchain::CreateImageViews()
     {
 
@@ -691,34 +470,27 @@ namespace Daybreak
             i++)
         {
 
-
             VkImageViewCreateInfo createInfo{};
-
 
 
             createInfo.sType =
                 VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 
 
-
             createInfo.image =
                 m_Images[i];
-
 
 
             createInfo.viewType =
                 VK_IMAGE_VIEW_TYPE_2D;
 
 
-
             createInfo.format =
                 m_ImageFormat;
 
 
-
             createInfo.subresourceRange.aspectMask =
                 VK_IMAGE_ASPECT_COLOR_BIT;
-
 
 
             createInfo.subresourceRange.levelCount =
@@ -731,22 +503,15 @@ namespace Daybreak
 
 
             if (vkCreateImageView(
-
                 m_Device->GetDevice(),
-
                 &createInfo,
-
                 nullptr,
-
-                &m_ImageViews[i]
-
-            ) != VK_SUCCESS)
+                &m_ImageViews[i])
+                != VK_SUCCESS)
             {
-
                 throw std::runtime_error(
                     "Failed to create image view!"
                 );
-
             }
 
         }
@@ -763,35 +528,25 @@ namespace Daybreak
 
 
 
-    /*
-        销毁Swapchain
 
-
-        注意：
-
-        Image不需要销毁。
-
-        因为它属于Swapchain。
-
-
-        但是ImageView需要自己销毁。
-
-    */
+    /**
+     * @brief Releases swapchain resources.
+     *
+     * Destroys image views and swapchain object.
+     *
+     * Swapchain images are managed by Vulkan and do not
+     * need to be destroyed manually.
+     */
     void VulkanSwapchain::Shutdown()
     {
-
 
         for (auto imageView : m_ImageViews)
         {
 
             vkDestroyImageView(
-
                 m_Device->GetDevice(),
-
                 imageView,
-
                 nullptr
-
             );
 
         }
@@ -801,18 +556,13 @@ namespace Daybreak
 
 
 
-
         if (m_Swapchain != VK_NULL_HANDLE)
         {
 
             vkDestroySwapchainKHR(
-
                 m_Device->GetDevice(),
-
                 m_Swapchain,
-
                 nullptr
-
             );
 
 

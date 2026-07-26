@@ -9,155 +9,121 @@
 namespace Daybreak
 {
 
-    /*
-        Swapchain支持信息
-
-        Vulkan创建Swapchain之前，需要查询当前GPU和Surface支持哪些能力。
-
-        包括：
-
-        1. Surface能力
-           - 最大最小交换图片数量
-           - 支持的分辨率范围
-           - Transform方式等
-
-        2. Surface格式
-           - 图片格式
-           - 颜色空间
-
-        3. Present模式
-           - FIFO
-           - Mailbox
-           - Immediate 等
-
-        根据这些信息选择最适合的Swapchain配置。
-    */
+    /**
+     * @brief Stores the capabilities supported by a Vulkan surface.
+     *
+     * Before creating a swapchain, Vulkan requires querying the selected
+     * physical device and surface to determine the available configurations.
+     *
+     * The information includes:
+     *
+     * - Surface capabilities
+     * - Supported image formats
+     * - Supported presentation modes
+     *
+     * The swapchain configuration is selected based on these properties.
+     */
     struct SwapchainSupportDetails
     {
 
-        /*
-            Surface基本能力
-
-            例如：
-
-            minImageCount
-                最少需要多少张Swapchain Image
-
-            maxImageCount
-                最大允许多少张Swapchain Image
-
-            currentExtent
-                当前窗口大小
-
-            currentTransform
-                Surface旋转方式
-        */
+        /**
+         * @brief Basic surface capabilities.
+         *
+         * Contains information such as:
+         *
+         * - Minimum and maximum number of swapchain images.
+         * - Supported image dimensions.
+         * - Surface transform capabilities.
+         */
         VkSurfaceCapabilitiesKHR Capabilities;
 
 
-        /*
-            支持的图片格式列表
-
-            例如：
-
-            VK_FORMAT_B8G8R8A8_SRGB
-
-            每个Surface可能支持多个格式，
-            创建Swapchain时需要选择一个。
-        */
+        /**
+         * @brief Supported surface image formats.
+         *
+         * Defines the available combinations of:
+         *
+         * - Pixel format.
+         * - Color space.
+         *
+         * A suitable format must be selected when creating the swapchain.
+         */
         std::vector<VkSurfaceFormatKHR> Formats;
 
 
-        /*
-            支持的呈现模式
-
-            例如：
-
-            FIFO:
-                类似传统VSync
-
-            MAILBOX:
-                三缓冲模式
-
-            IMMEDIATE:
-                立即显示，可能撕裂
-        */
+        /**
+         * @brief Supported presentation modes.
+         *
+         * Examples:
+         *
+         * - FIFO:
+         *   Synchronizes presentation with vertical refresh.
+         *
+         * - MAILBOX:
+         *   Low-latency mode using additional buffering.
+         *
+         * - IMMEDIATE:
+         *   Presents images immediately and may cause tearing.
+         */
         std::vector<VkPresentModeKHR> PresentModes;
 
     };
 
 
-    /*
-        VulkanSwapchain
-
-        管理 Vulkan Swapchain 生命周期。
-
-        Swapchain 是 Vulkan 显示系统的核心：
-
-        GPU渲染 ---> Swapchain Image ---> Surface ---> 屏幕
-
-
-        主要负责：
-
-        1. 创建Swapchain
-
-        2. 获取Swapchain Images
-
-        3. 创建ImageView
-
-        4. 保存图片格式和尺寸信息
-
-
-        生命周期：
-
-        Init()
-            |
-            |-- Query支持信息
-            |
-            |-- 创建VkSwapchainKHR
-            |
-            |-- 获取VkImage
-            |
-            |-- 创建VkImageView
-
-
-        Shutdown()
-            |
-            |-- 销毁ImageView
-            |
-            |-- 销毁Swapchain
-
-    */
     class VulkanDevice;
 
 
+    /**
+     * @brief Manages the Vulkan swapchain lifecycle.
+     *
+     * The swapchain is responsible for presenting rendered images
+     * to the window surface.
+     *
+     * Responsibilities:
+     *
+     * - Query swapchain support information.
+     * - Create and destroy VkSwapchainKHR.
+     * - Retrieve swapchain images.
+     * - Create image views for rendering.
+     * - Store swapchain format and extent information.
+     *
+     * Lifetime:
+     *
+     * Init()
+     *   |
+     *   +-- Query surface capabilities
+     *   |
+     *   +-- Create swapchain
+     *   |
+     *   +-- Retrieve images
+     *   |
+     *   +-- Create image views
+     *
+     * Shutdown()
+     *   |
+     *   +-- Destroy image views
+     *   |
+     *   +-- Destroy swapchain
+     */
     class VulkanSwapchain
     {
 
     public:
 
 
-        /*
-            初始化Swapchain
-
-            参数：
-
-            device
-                Vulkan逻辑设备
-
-            surface
-                GLFW创建的窗口Surface
-
-            window
-                GLFW窗口对象
-
-            Swapchain需要同时知道：
-
-            GPU设备
-            显示Surface
-            窗口尺寸
-
-        */
+        /**
+         * @brief Initializes the swapchain.
+         *
+         * The swapchain depends on:
+         *
+         * - Vulkan logical device.
+         * - Window surface.
+         * - Current window size.
+         *
+         * @param device Vulkan device wrapper.
+         * @param surface Vulkan surface associated with the window.
+         * @param window GLFW window handle.
+         */
         void Init(
             VulkanDevice* device,
             VkSurfaceKHR surface,
@@ -165,90 +131,82 @@ namespace Daybreak
         );
 
 
-
-        /*
-            获取Swapchain图片格式
-
-            RenderPass创建时需要使用同样的Format。
-
-            例如：
-
-            VK_FORMAT_B8G8R8A8_SRGB
-        */
+        /**
+         * @brief Returns the swapchain image format.
+         *
+         * The render pass attachment format must match this value.
+         *
+         * @return Vulkan image format.
+         */
         VkFormat GetImageFormat() const
         {
             return m_ImageFormat;
         }
 
 
-
-        /*
-            获取Swapchain尺寸
-
-            Pipeline中的Viewport、
-            Framebuffer创建都会使用。
-        */
+        /**
+         * @brief Returns the swapchain extent.
+         *
+         * Used when creating:
+         *
+         * - Viewport.
+         * - Framebuffers.
+         *
+         * @return Swapchain image dimensions.
+         */
         VkExtent2D GetExtent() const
         {
             return m_Extent;
         }
 
 
-
-        /*
-            获取所有Swapchain ImageView
-
-            Framebuffer创建需要：
-
-            一个Framebuffer对应一个Swapchain ImageView。
-
-            例如：
-
-            Swapchain有3张图片：
-
-            ImageView[0]
-            ImageView[1]
-            ImageView[2]
-
-
-            就会创建三个Framebuffer。
-        */
+        /**
+         * @brief Returns all swapchain image views.
+         *
+         * Each swapchain image view is normally associated with
+         * one framebuffer.
+         *
+         * Example:
+         *
+         * Triple buffering:
+         *
+         * ImageView[0] -> Framebuffer[0]
+         * ImageView[1] -> Framebuffer[1]
+         * ImageView[2] -> Framebuffer[2]
+         *
+         * @return Collection of image views.
+         */
         const std::vector<VkImageView>& GetImageViews() const
         {
             return m_ImageViews;
         }
 
 
-
-        /*
-            获取VkSwapchainKHR句柄
-
-            DrawFrame中：
-
-            vkAcquireNextImageKHR()
-
-            需要使用Swapchain对象。
-        */
+        /**
+         * @brief Returns the native Vulkan swapchain handle.
+         *
+         * Used during presentation operations such as:
+         *
+         * vkAcquireNextImageKHR()
+         *
+         * @return VkSwapchainKHR handle.
+         */
         VkSwapchainKHR GetSwapchain() const
         {
             return m_Swapchain;
         }
 
 
-
-        /*
-            获取Swapchain Image数量
-
-            通常：
-
-            双缓冲:
-                2
-
-            三缓冲:
-                3
-
-            用于创建CommandBuffer数量。
-        */
+        /**
+         * @brief Returns the number of swapchain images.
+         *
+         * The image count is usually:
+         *
+         * - 2 for double buffering.
+         * - 3 for triple buffering.
+         *
+         * @return Number of swapchain images.
+         */
         uint32_t GetImageCount() const
         {
             return static_cast<uint32_t>(
@@ -257,224 +215,200 @@ namespace Daybreak
         }
 
 
-
-        /*
-            销毁Swapchain资源
-        */
+        /**
+         * @brief Releases all swapchain resources.
+         */
         void Shutdown();
-
 
 
     private:
 
 
-        /*
-            查询GPU支持的Swapchain能力
-
-            返回：
-
-            - Surface能力
-            - Format列表
-            - Present模式列表
-
-        */
+        /**
+         * @brief Queries swapchain support information.
+         *
+         * Retrieves:
+         *
+         * - Surface capabilities.
+         * - Supported formats.
+         * - Supported presentation modes.
+         *
+         * @return Available swapchain support details.
+         */
         SwapchainSupportDetails QuerySwapchainSupport();
 
 
-
-        /*
-            从支持的Format中选择最佳格式
-
-            通常选择：
-
-            VK_FORMAT_B8G8R8A8_SRGB
-
-            VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-        */
+        /**
+         * @brief Selects the preferred surface format.
+         *
+         * Usually prefers:
+         *
+         * VK_FORMAT_B8G8R8A8_SRGB
+         *
+         * with:
+         *
+         * VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+         *
+         * @param formats Available surface formats.
+         * @return Selected surface format.
+         */
         VkSurfaceFormatKHR ChooseSurfaceFormat(
             const std::vector<VkSurfaceFormatKHR>& formats
         );
 
 
-
-        /*
-            选择Present模式
-
-            优先：
-
-            MAILBOX
-
-            如果不支持：
-
-            FIFO
-
-        */
+        /**
+         * @brief Selects the preferred presentation mode.
+         *
+         * Preference order:
+         *
+         * 1. MAILBOX
+         * 2. FIFO fallback
+         *
+         * @param presentModes Available presentation modes.
+         * @return Selected presentation mode.
+         */
         VkPresentModeKHR ChoosePresentMode(
             const std::vector<VkPresentModeKHR>& presentModes
         );
 
 
-
-        /*
-            选择Swapchain分辨率
-
-            通常根据：
-
-            GLFW窗口大小
-
-            Surface限制
-
-            计算最终Extent。
-        */
+        /**
+         * @brief Determines the swapchain image extent.
+         *
+         * The final extent depends on:
+         *
+         * - Current window size.
+         * - Surface limitations.
+         *
+         * @param capabilities Surface capabilities.
+         * @return Selected swapchain extent.
+         */
         VkExtent2D ChooseExtent(
             const VkSurfaceCapabilitiesKHR& capabilities
         );
 
-
-
-        /*
-            创建VkSwapchainKHR
-
-            负责：
-
-            创建交换链对象
-
-            指定：
-
-            - 图片数量
-            - 图片格式
-            - 分辨率
-            - Present模式
-        */
+        /**
+         * @brief Creates the Vulkan swapchain object.
+         *
+         * Configures:
+         *
+         * - Image count.
+         * - Image format.
+         * - Image extent.
+         * - Presentation mode.
+         * - Surface association.
+         *
+         * @param details Swapchain support information used for configuration.
+         */
         void CreateSwapchain(
             const SwapchainSupportDetails& details
         );
 
 
-
-        /*
-            获取Swapchain内部的VkImage
-
-            Vulkan创建Swapchain后，
-
-            Image由驱动管理。
-
-            我们只获取句柄。
-        */
+        /**
+         * @brief Retrieves swapchain images.
+         *
+         * Swapchain images are created and owned by the Vulkan
+         * implementation. The application only obtains references
+         * to these images.
+         */
         void GetSwapchainImages();
 
 
-
-        /*
-            创建ImageView
-
-            VkImage不能直接用于RenderPass。
-
-            需要：
-
-            VkImage
-
-                |
-
-                v
-
-            VkImageView
-
-                |
-
-                v
-
-            Framebuffer
-
-        */
+        /**
+         * @brief Creates image views for swapchain images.
+         *
+         * VkImage objects cannot be directly attached to rendering
+         * operations. Image views provide the resource description
+         * required by render passes and framebuffers.
+         *
+         * Image lifecycle:
+         *
+         * VkImage
+         *     |
+         *     v
+         * VkImageView
+         *     |
+         *     v
+         * Framebuffer
+         */
         void CreateImageViews();
-
 
 
     private:
 
 
-        /*
-            Vulkan逻辑设备
-
-            用于调用：
-
-            vkCreateSwapchainKHR
-
-            vkDestroySwapchainKHR
-
-            vkCreateImageView
-
-        */
+        /**
+         * @brief Reference to the Vulkan device wrapper.
+         *
+         * Used for Vulkan resource creation and destruction:
+         *
+         * - vkCreateSwapchainKHR()
+         * - vkDestroySwapchainKHR()
+         * - vkCreateImageView()
+         */
         VulkanDevice* m_Device = nullptr;
 
 
-
-        /*
-            Window Surface
-
-            Swapchain最终显示到这个Surface。
-        */
+        /**
+         * @brief Window surface associated with this swapchain.
+         *
+         * The swapchain presents rendered images to this surface.
+         */
         VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
 
-
-        /*
-            Vulkan交换链对象
-
-            GPU和窗口之间的缓冲队列。
-        */
+        /**
+         * @brief Vulkan swapchain handle.
+         *
+         * Represents the queue of images used for presentation
+         * between the GPU and the window system.
+         */
         VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
 
-
-        /*
-            GLFW窗口对象
-
-            用于查询窗口大小。
-        */
+        /**
+         * @brief Native GLFW window handle.
+         *
+         * Used to query the current window size when determining
+         * swapchain extent.
+         */
         GLFWwindow* m_Window = nullptr;
 
 
-
-        /*
-            Swapchain Image列表
-
-            注意：
-
-            这些Image不是自己创建的。
-
-            Vulkan驱动创建，我们获取引用。
-        */
+        /**
+         * @brief Swapchain images.
+         *
+         * These images are created internally by Vulkan when the
+         * swapchain is created. The application only stores their
+         * handles.
+         */
         std::vector<VkImage> m_Images;
 
 
-
-        /*
-            Image对应的View。
-
-            RenderPass绑定Framebuffer时使用。
-
-        */
+        /**
+         * @brief Image views corresponding to swapchain images.
+         *
+         * Used by render passes and framebuffers during rendering.
+         */
         std::vector<VkImageView> m_ImageViews;
 
 
-
-        /*
-            Swapchain图片格式
-
-            RenderPass附件格式必须一致。
-        */
+        /**
+         * @brief Selected swapchain image format.
+         *
+         * The render pass attachment format must match this value.
+         */
         VkFormat m_ImageFormat =
             VK_FORMAT_UNDEFINED;
 
 
-
-        /*
-            Swapchain尺寸
-
-            通常等于窗口大小。
-        */
+        /**
+         * @brief Swapchain image dimensions.
+         *
+         * Usually matches the current window framebuffer size.
+         */
         VkExtent2D m_Extent{};
 
     };

@@ -6,7 +6,27 @@
 namespace Daybreak
 {
 
-
+    /**
+     * @brief Creates a Vulkan descriptor pool.
+     *
+     * Descriptor pools are used to allocate descriptor sets.
+     *
+     * The pool specifies:
+     *
+     * - Which descriptor types can be allocated.
+     * - How many descriptors of each type are available.
+     * - Maximum number of descriptor sets.
+     *
+     * Current configuration supports:
+     *
+     * - Uniform buffers.
+     * - Combined image samplers.
+     *
+     * This is enough for basic rendering with:
+     *
+     * - Camera matrices.
+     * - Texture sampling.
+     */
     void VulkanDescriptorPool::Init(
         VkDevice device
     )
@@ -15,47 +35,44 @@ namespace Daybreak
         m_Device = device;
 
 
-        /*
-            描述 Pool 中可以分配什么类型的 Descriptor。
 
-            我们现在只有：
-
-            Uniform Buffer
-
-        */
-
-       // VkDescriptorPoolSize poolSize{};
-
-
-        //poolSize.type =
-        //    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-
-
-        ///*
-        //    可以创建多少个 DescriptorSet。
-
-        //    现在只有一个 UBO。
-
-        //    所以先设置 1。
-
-        //*/
-
-        //poolSize.descriptorCount = 1;
-
-
+        /**
+         * @brief Descriptor capacity configuration.
+         *
+         * Defines the number of descriptors that can be allocated
+         * from this pool.
+         *
+         * These values do not create descriptor sets directly.
+         */
         VkDescriptorPoolSize poolSizes[2];
 
 
+        /*
+         * Uniform buffer descriptors.
+         *
+         * Used for shader data such as:
+         *
+         * - Model matrix.
+         * - View matrix.
+         * - Projection matrix.
+         */
         poolSizes[0].type =
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
 
         poolSizes[0].descriptorCount =
             1;
 
 
 
+        /*
+         * Combined image sampler descriptors.
+         *
+         * Used for sampled textures.
+         */
         poolSizes[1].type =
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
 
         poolSizes[1].descriptorCount =
             1;
@@ -70,7 +87,11 @@ namespace Daybreak
 
 
 
-        poolInfo.poolSizeCount = 2;
+        /*
+         * Number of descriptor pool size entries.
+         */
+        poolInfo.poolSizeCount =
+            2;
 
 
         poolInfo.pPoolSizes =
@@ -78,12 +99,14 @@ namespace Daybreak
 
 
 
-        /*
-            最大 DescriptorSet 数量。
-
-        */
-
-        poolInfo.maxSets = 1;
+        /**
+         * @brief Maximum number of descriptor sets.
+         *
+         * The application can allocate at most this many descriptor
+         * sets from this pool.
+         */
+        poolInfo.maxSets =
+            1;
 
 
 
@@ -105,6 +128,12 @@ namespace Daybreak
 
 
 
+    /**
+     * @brief Destroys descriptor pool.
+     *
+     * Descriptor sets allocated from this pool are automatically
+     * released when the pool is destroyed.
+     */
     void VulkanDescriptorPool::Shutdown()
     {
 

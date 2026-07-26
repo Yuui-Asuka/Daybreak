@@ -9,76 +9,38 @@ namespace Daybreak
 {
 
     /**
-     * @brief 初始化 Vulkan Instance
+     * @brief Initializes the Vulkan instance.
      *
-     * Vulkan Instance 是整个 Vulkan 程序的入口对象。
-     *
-     * 它负责:
-     *
-     * - 连接 Vulkan Loader
-     * - 查询系统 GPU
-     * - 创建后续 Vulkan 对象
-     *
+     * The Vulkan instance is the root object of a Vulkan application.
+     * It connects the application with the Vulkan loader and enables
+     * access to physical devices and other Vulkan resources.
      */
     void VulkanContext::Init()
     {
-        /*
-        应用程序信息
-
-        VkApplicationInfo 不会创建任何 Vulkan 对象，
-        它只是告诉 Vulkan 当前程序的信息。
-
-        例如:
-        - 应用名称
-        - 引擎名称
-        - Vulkan API 版本
-        */
+        // Define application information used during instance creation.
         VkApplicationInfo appInfo{};
 
         appInfo.sType =
             VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
-        // 当前应用名称
         appInfo.pApplicationName =
             "Daybreak";
 
-        // 应用版本
         appInfo.applicationVersion =
             VK_MAKE_VERSION(1, 0, 0);
 
-        // 引擎名称
         appInfo.pEngineName =
             "Daybreak Engine";
 
-        // 引擎版本
         appInfo.engineVersion =
-            VK_MAKE_VERSION(1, 0, 0);
+            VK_MAKE_VERSION(1, 0, 1);
 
-        /*
-        指定 Vulkan API 版本
-
-        当前使用 Vulkan 1.3。
-        */
+        // Request Vulkan API version 1.3.
         appInfo.apiVersion =
             VK_API_VERSION_1_3;
 
-        /*
-        Vulkan Instance Extension
 
-        Vulkan 默认不知道窗口系统如何创建。
-
-        GLFW 会根据平台返回需要的 Extension:
-
-        Windows:
-            VK_KHR_surface
-            VK_KHR_win32_surface
-
-        Linux:
-            VK_KHR_xcb_surface
-            等
-
-        这些 Extension 用于后续创建 Surface。
-        */
+        // Query Vulkan extensions required by GLFW.
         uint32_t glfwExtensionCount = 0;
 
         const char** glfwExtensions =
@@ -86,28 +48,16 @@ namespace Daybreak
                 &glfwExtensionCount
             );
 
-        /*
-        Instance 创建信息
 
-        VkInstanceCreateInfo 描述:
-        - 使用哪个 ApplicationInfo
-        - 开启哪些 Extension
-        - 开启哪些 Layer
-        */
-
+        // Enable Vulkan validation layers.
         const char* validationLayers[] =
         {
             "VK_LAYER_KHRONOS_validation"
         };
 
 
+        // Describe Vulkan instance creation parameters.
         VkInstanceCreateInfo createInfo{};
-
-
-        createInfo.enabledLayerCount = 1;
-
-        createInfo.ppEnabledLayerNames =
-            validationLayers;
 
         createInfo.sType =
             VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -115,7 +65,12 @@ namespace Daybreak
         createInfo.pApplicationInfo =
             &appInfo;
 
-        // 开启 GLFW 所需的 Vulkan Extension
+        createInfo.enabledLayerCount =
+            1;
+
+        createInfo.ppEnabledLayerNames =
+            validationLayers;
+
         createInfo.enabledExtensionCount =
             glfwExtensionCount;
 
@@ -123,18 +78,7 @@ namespace Daybreak
             glfwExtensions;
 
 
-        /*
-        创建 Vulkan Instance
-
-        Instance 是 Vulkan 中最高层对象。
-
-        Physical Device
-        Logical Device
-        Surface
-
-        都依赖 Instance。
-        */
-
+        // Query available Vulkan validation layers.
         uint32_t layerCount = 0;
 
         vkEnumerateInstanceLayerProperties(
@@ -149,6 +93,8 @@ namespace Daybreak
             layers.data()
         );
 
+
+        // Print available validation layers.
         for (const auto& layer : layers)
         {
             std::cout
@@ -157,6 +103,7 @@ namespace Daybreak
         }
 
 
+        // Create the Vulkan instance.
         if (
             vkCreateInstance(
                 &createInfo,
@@ -178,48 +125,21 @@ namespace Daybreak
 
     }
 
+
     /**
-     * @brief 创建 Vulkan Surface
+     * @brief Creates a Vulkan surface from a GLFW window.
      *
-     * Surface 是 Vulkan 和窗口系统之间的桥梁。
+     * A surface represents the connection between Vulkan and
+     * the native window system. It is required for swapchain creation.
      *
-     * Vulkan 本身不知道:
-     *
-     * - HWND
-     * - X11 Window
-     * - macOS Window
-     *
-     * 所以需要通过 Surface 抽象窗口。
-     *
-     * 创建流程:
-     *
-     * GLFW Window
-     *       |
-     *       ↓
-     * VkSurfaceKHR
-     *       |
-     *       ↓
-     * Swapchain
-     *
-     *
-     * @param window GLFW 窗口指针
+     * @param window GLFW window used as the presentation target.
      */
     void VulkanContext::CreateSurface(
         GLFWwindow* window
     )
     {
 
-        /*
-        创建 Vulkan Instance
-
-        Instance 是 Vulkan 中最高层对象。
-
-        Physical Device
-        Logical Device
-        Surface
-
-        都依赖 Instance。
-        */
+        // Create a Vulkan surface from the GLFW window.
         if (
             glfwCreateWindowSurface(
                 m_Instance,
@@ -242,39 +162,19 @@ namespace Daybreak
 
     }
 
+
     /**
-     * @brief 销毁 Vulkan Context
+     * @brief Releases all Vulkan context resources.
      *
-     * 销毁顺序:
+     * Destroys the surface and Vulkan instance.
      *
-     * Surface
-     *    ↓
-     * Instance
-     *
-     *
-     * 原因:
-     *
-     * Surface 创建于 Instance，
-     * 所以必须先销毁 Surface。
-     *
-     * 注意:
-     *
-     * Device
-     * Swapchain
-     * Pipeline
-     * CommandBuffer
-     *
-     * 都必须在 Context 前销毁。
+     * Vulkan objects depending on this context, such as logical devices
+     * and swapchains, must be destroyed before calling this function.
      */
     void VulkanContext::Shutdown()
     {
 
-        /*
-        销毁窗口 Surface
-
-        Surface 不包含 GPU 资源，
-        但是依赖 Vulkan Instance。
-        */
+        // Destroy the Vulkan surface.
         if (m_Surface)
         {
             vkDestroySurfaceKHR(
@@ -284,11 +184,8 @@ namespace Daybreak
             );
         }
 
-        /*
-        销毁 Vulkan Instance
 
-        Instance 是 Vulkan 顶层对象。
-        */
+        // Destroy the Vulkan instance.
         if (m_Instance)
         {
             vkDestroyInstance(
@@ -298,4 +195,5 @@ namespace Daybreak
         }
 
     }
+
 }

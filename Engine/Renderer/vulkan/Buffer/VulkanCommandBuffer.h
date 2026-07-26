@@ -4,125 +4,47 @@
 
 #include <vector>
 
+
 namespace Daybreak
 {
 
-    /*
-        VulkanCommandBuffer
-
-        管理 Vulkan Command Buffer。
-
-
-        Command Buffer 是提交给 GPU 执行的命令列表。
-
-
-        CPU记录：
-
-            vkCmdBeginRenderPass()
-
-                  |
-
-            vkCmdBindPipeline()
-
-                  |
-
-            vkCmdDraw()
-
-                  |
-
-            vkCmdEndRenderPass()
-
-
-
-        GPU执行：
-
-            vkQueueSubmit()
-
-
-
-        当前结构：
-
-            一个Swapchain Image
-
-                    |
-
-                    v
-
-            一个Framebuffer
-
-                    |
-
-                    v
-
-            一个CommandBuffer
-
-
-
-        例如：
-
-            Swapchain Image Count = 3
-
-
-            CommandBuffer[0]
-
-                    对应
-
-            Framebuffer[0]
-
-
-            CommandBuffer[1]
-
-                    对应
-
-            Framebuffer[1]
-
-
-            CommandBuffer[2]
-
-                    对应
-
-            Framebuffer[2]
-
-    */
+    /**
+     * @brief Manages Vulkan command buffers.
+     *
+     * Command buffers store recorded GPU commands that are submitted
+     * to Vulkan queues for execution.
+     *
+     * Responsibilities:
+     *
+     * - Allocate command buffers from a command pool.
+     * - Record rendering commands.
+     * - Provide recorded command buffers for queue submission.
+     *
+     * Command buffer lifetime is controlled by the Vulkan command pool.
+     */
     class VulkanCommandBuffer
     {
     public:
 
-        /*
-            初始化Command Buffer。
-
-
-            device:
-
-                Vulkan Logical Device。
-
-
-            commandPool:
-
-                Command Buffer来源。
-
-
-            renderPass:
-
-                录制RenderPass命令时使用。
-
-
-            extent:
-
-                渲染区域大小。
-
-
-            pipeline:
-
-                绘制时绑定的Graphics Pipeline。
-
-
-            framebuffers:
-
-                每个Command Buffer对应一个Framebuffer。
-
-
-        */
+        /**
+         * @brief Initializes command buffers.
+         *
+         * Allocates command buffers and records rendering commands
+         * for each framebuffer.
+         *
+         * @param device Vulkan logical device.
+         * @param commandPool Command pool used for allocation.
+         * @param renderPass Render pass used during rendering.
+         * @param extent Rendering resolution.
+         * @param pipeline Graphics pipeline.
+         * @param pipelineLayout Pipeline layout.
+         * @param descriptorSet Descriptor resources used by shaders.
+         * @param framebuffers Target framebuffers.
+         * @param vertexBuffer Vertex buffer used for drawing.
+         * @param vertexCount Number of vertices.
+         * @param indexBuffer Index buffer used for indexed drawing.
+         * @param indexCount Number of indices.
+         */
         void Init(
             VkDevice device,
             VkCommandPool commandPool,
@@ -139,46 +61,23 @@ namespace Daybreak
         );
 
 
-
-        /*
-            销毁Command Buffer。
-
-            注意：
-
-            Command Buffer属于Command Pool。
-
-
-            通常：
-
-                CommandPool销毁时
-
-                CommandBuffer会自动释放。
-
-
-            这里可以选择：
-
-                手动Free
-
-                或只清空vector。
-
-
-        */
+        /**
+         * @brief Releases command buffer references.
+         *
+         * Actual command buffer memory is released by the Vulkan
+         * command pool.
+         */
         void Shutdown();
 
 
-
-        /*
-            获取Command Buffer列表。
-
-
-            DrawFrame时：
-
-                根据当前Swapchain Image Index
-
-                选择对应CommandBuffer提交。
-
-
-        */
+        /**
+         * @brief Returns all allocated command buffers.
+         *
+         * The returned command buffers can be submitted to a Vulkan
+         * queue.
+         *
+         * @return Recorded command buffer collection.
+         */
         const std::vector<VkCommandBuffer>& GetCommandBuffers() const
         {
             return m_CommandBuffers;
@@ -188,42 +87,40 @@ namespace Daybreak
 
     private:
 
-        /*
-            从Command Pool分配Command Buffer。
-
-
-            count:
-
-                通常等于Swapchain Image数量。
-
-        */
+        /**
+         * @brief Allocates command buffers from a command pool.
+         *
+         * @param commandPool Source command pool.
+         * @param count Number of command buffers to allocate.
+         */
         void AllocateCommandBuffers(
             VkCommandPool commandPool,
             uint32_t count
         );
 
 
-
-        /*
-            录制GPU命令。
-
-
-            包含：
-
-                Begin Command Buffer
-
-                Begin RenderPass
-
-                Bind Pipeline
-
-                Draw
-
-                End RenderPass
-
-                End Command Buffer
-
-
-        */
+        /**
+         * @brief Records rendering commands into command buffers.
+         *
+         * Records:
+         *
+         * - Render pass execution.
+         * - Pipeline binding.
+         * - Descriptor binding.
+         * - Vertex/index buffer binding.
+         * - Draw commands.
+         *
+         * @param renderPass Render pass.
+         * @param extent Rendering extent.
+         * @param pipeline Graphics pipeline.
+         * @param pipelineLayout Pipeline layout.
+         * @param descriptorSet Descriptor set.
+         * @param framebuffers Target framebuffers.
+         * @param vertexBuffer Vertex buffer.
+         * @param vertexCount Vertex count.
+         * @param indexBuffer Index buffer.
+         * @param indexCount Index count.
+         */
         void RecordCommandBuffers(
             VkRenderPass renderPass,
             VkExtent2D extent,
@@ -241,28 +138,38 @@ namespace Daybreak
 
     private:
 
-        /*
-            Vulkan Logical Device。
-
-        */
+        /**
+         * @brief Vulkan logical device.
+         *
+         * Used for command buffer allocation and management.
+         */
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
+
+        /**
+         * @brief Index buffer reference.
+         *
+         * Stores the buffer used for indexed rendering.
+         *
+         * Currently reserved for future command recording logic.
+         */
         VkBuffer m_IndexBuffer =
             VK_NULL_HANDLE;
 
 
+        /**
+         * @brief Number of indices used for indexed drawing.
+         */
         uint32_t m_IndexCount = 0;
 
-        /*
-            Command Buffer集合。
 
-            数量通常：
-
-                = Swapchain Image数量
-
-
-        */
+        /**
+         * @brief Collection of allocated command buffers.
+         *
+         * Each command buffer usually corresponds to one framebuffer
+         * in the swapchain.
+         */
         std::vector<VkCommandBuffer> m_CommandBuffers;
 
     };

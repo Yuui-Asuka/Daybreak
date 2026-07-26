@@ -5,102 +5,68 @@
 
 #include "VulkanRenderPass.h"
 
+
 namespace Daybreak
 {
 
+    /**
+     * @brief Initializes the Vulkan render pass.
+     *
+     * Creates the render pass configuration used during rendering.
+     *
+     * The render pass defines:
+     *
+     * - Color attachment
+     * - Depth attachment
+     * - Subpass operations
+     * - Pipeline synchronization dependencies
+     *
+     * @param device Vulkan logical device used to create the render pass.
+     * @param imageFormat Swapchain image format used by the color attachment.
+     */
     void VulkanRenderPass::Init(
         VkDevice device,
-        VkFormat imageFormat)
+        VkFormat imageFormat
+    )
     {
-        // 保存Logical Device
-        // RenderPass的创建和销毁都需要Device
+
+        // Store the logical device used for resource management.
         m_Device = device;
 
 
-        /*
-            Attachment Description
 
-            描述RenderPass使用的渲染目标。
-
-            当前：
-
-            一个Color Attachment。
-
-            对应Swapchain Image。
-
-
-            渲染流程：
-
-            Swapchain Image
-
-                  |
-                  v
-
-            Color Attachment
-
-                  |
-                  v
-
-            Present到屏幕
-
-        */
-
+        /**
+         * @brief Defines the color attachment.
+         *
+         * The color attachment represents the swapchain image
+         * used as the rendering target.
+         */
         VkAttachmentDescription colorAttachment{};
 
 
-        // 颜色格式必须和Swapchain一致
+        // Use the same format as the swapchain image.
         colorAttachment.format =
             imageFormat;
 
 
-        // 当前不使用MSAA
+        // Disable multisampling.
         colorAttachment.samples =
             VK_SAMPLE_COUNT_1_BIT;
 
 
-        /*
-            Load Operation
 
-            RenderPass开始时如何处理已有数据。
-
-
-            CLEAR:
-
-                开始渲染前清空颜色。
-
-                使用VkClearValue中的颜色。
-
-
-        */
+        // Clear the image before rendering begins.
         colorAttachment.loadOp =
             VK_ATTACHMENT_LOAD_OP_CLEAR;
 
 
-        /*
-            Store Operation
-
-            RenderPass结束后如何处理结果。
-
-
-            STORE:
-
-                保存渲染结果。
-
-                因为之后需要Present到屏幕。
-
-        */
+        // Preserve the rendered image for presentation.
         colorAttachment.storeOp =
             VK_ATTACHMENT_STORE_OP_STORE;
 
 
-        /*
-            Stencil Attachment
 
-            当前没有Stencil。
-
-            所以忽略。
-
-        */
+        // No stencil attachment is used.
         colorAttachment.stencilLoadOp =
             VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 
@@ -109,233 +75,180 @@ namespace Daybreak
 
 
 
-        /*
-            Image Layout Transition
-
-
-            初始状态：
-
-                undefined
-
-                GPU不关心之前内容。
-
-
-            最终状态：
-
-                present
-
-                交给Swapchain显示。
-
-        */
+        // Initial image state before rendering.
         colorAttachment.initialLayout =
             VK_IMAGE_LAYOUT_UNDEFINED;
 
+
+        // Final image state for presentation.
         colorAttachment.finalLayout =
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 
 
-        /*
-            Attachment Reference
-
-
-            Subpass引用Attachment。
-
-
-            attachment = 0
-
-            表示使用colorAttachment数组中的第0个。
-
-        */
-
+        /**
+         * @brief References the color attachment inside the subpass.
+         */
         VkAttachmentReference colorAttachmentRef{};
 
+
+        // Reference the first attachment.
         colorAttachmentRef.attachment = 0;
 
 
-        /*
-            Shader输出颜色时，
-
-            Image需要处于：
-
-                COLOR_ATTACHMENT_OPTIMAL
-
-            Layout。
-
-        */
+        // Image layout required for color output.
         colorAttachmentRef.layout =
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 
 
-        /*
-            Subpass
 
-
-            描述一次渲染步骤。
-
-
-            当前：
-
-            一个Graphics Subpass。
-
-
-            Pipeline:
-
-                Vertex Shader
-
-                    |
-
-                Fragment Shader
-
-                    |
-
-                Color Attachment
-
-
-        */
-
+        /**
+         * @brief Defines the depth attachment.
+         *
+         * Used for depth testing during rasterization.
+         */
         VkAttachmentDescription depthAttachment{};
 
+
+        // Use 32-bit floating point depth format.
         depthAttachment.format =
             VK_FORMAT_D32_SFLOAT;
 
 
+        // Disable multisampling.
         depthAttachment.samples =
             VK_SAMPLE_COUNT_1_BIT;
 
 
+        // Clear depth buffer before rendering.
         depthAttachment.loadOp =
             VK_ATTACHMENT_LOAD_OP_CLEAR;
 
 
+        // Depth data is not needed after rendering.
         depthAttachment.storeOp =
             VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
 
+        // No stencil operations.
         depthAttachment.stencilLoadOp =
             VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-
 
         depthAttachment.stencilStoreOp =
             VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
 
+
+        // Initial depth image state.
         depthAttachment.initialLayout =
             VK_IMAGE_LAYOUT_UNDEFINED;
 
 
+        // Final depth image state.
         depthAttachment.finalLayout =
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+
+
+        /**
+         * @brief References the depth attachment inside the subpass.
+         */
         VkAttachmentReference depthAttachmentRef{};
 
 
+        // Reference the second attachment.
         depthAttachmentRef.attachment =
             1;
 
 
+        // Layout required for depth testing.
         depthAttachmentRef.layout =
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+
+
+
+        /**
+         * @brief Defines a graphics rendering subpass.
+         *
+         * A subpass describes one rendering operation.
+         *
+         * Current pipeline:
+         *
+         * Vertex Shader
+         *      |
+         * Fragment Shader
+         *      |
+         * Color Attachment
+         */
         VkSubpassDescription subpass{};
 
 
+        // This subpass belongs to the graphics pipeline.
         subpass.pipelineBindPoint =
             VK_PIPELINE_BIND_POINT_GRAPHICS;
 
 
-        // 使用一个Color Attachment
-        subpass.colorAttachmentCount = 1;
+        // Use one color attachment.
+        subpass.colorAttachmentCount =
+            1;
 
 
         subpass.pColorAttachments =
             &colorAttachmentRef;
 
+
+        // Attach depth buffer.
         subpass.pDepthStencilAttachment =
             &depthAttachmentRef;
 
 
-        /*
-            Subpass Dependency
 
 
-            描述不同Pipeline阶段之间的同步。
-
-
-            当前：
-
-            外部操作
-
-                ↓
-
-            Color Attachment Output
-
-
-            确保写入Framebuffer前资源准备完成。
-
-        */
-
+        /**
+         * @brief Defines synchronization between pipeline stages.
+         *
+         * Ensures that rendering operations access attachments
+         * at the correct time.
+         */
         VkSubpassDependency dependency{};
 
 
-        // RenderPass之前的操作
+        // Dependency from operations outside this render pass.
         dependency.srcSubpass =
             VK_SUBPASS_EXTERNAL;
 
 
-        // 当前Subpass
-        dependency.dstSubpass = 0;
+        // Dependency to the first subpass.
+        dependency.dstSubpass =
+            0;
 
 
-        /*
-            Pipeline Stage同步点
 
-            等待Color Attachment Output阶段。
-
-        */
+        // Wait for color attachment output stage.
         dependency.srcStageMask =
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
 
         dependency.dstStageMask =
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 
 
-        /*
-            Access Mask
+        // No previous access requirement.
+        dependency.srcAccessMask =
+            0;
 
 
-            外部阶段没有访问。
-
-
-            当前Subpass需要写Color Attachment。
-
-        */
-        dependency.srcAccessMask = 0;
-
+        // Allow color attachment writes.
         dependency.dstAccessMask =
             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 
 
-        /*
-            RenderPass Create Info
 
-
-            最终把：
-
-                Attachment
-
-                Subpass
-
-                Dependency
-
-
-            组合成VkRenderPass。
-
-        */
-
+        // Combine all attachments.
         VkAttachmentDescription attachments[] =
         {
             colorAttachment,
@@ -343,6 +256,16 @@ namespace Daybreak
         };
 
 
+
+        /**
+         * @brief Creates render pass configuration.
+         *
+         * Combines:
+         *
+         * - Attachments
+         * - Subpasses
+         * - Dependencies
+         */
         VkRenderPassCreateInfo renderPassInfo{};
 
 
@@ -350,30 +273,37 @@ namespace Daybreak
             VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
 
-        // Attachment数量
-        renderPassInfo.attachmentCount = 2;
+        // Specify attachment list.
+        renderPassInfo.attachmentCount =
+            2;
+
 
         renderPassInfo.pAttachments =
             attachments;
 
 
 
-        // Subpass数量
-        renderPassInfo.subpassCount = 1;
+        // Specify subpass list.
+        renderPassInfo.subpassCount =
+            1;
+
 
         renderPassInfo.pSubpasses =
             &subpass;
 
 
 
-        // Dependency数量
-        renderPassInfo.dependencyCount = 1;
+        // Specify dependency list.
+        renderPassInfo.dependencyCount =
+            1;
+
 
         renderPassInfo.pDependencies =
             &dependency;
 
 
 
+        // Create Vulkan render pass.
         if (vkCreateRenderPass(
             m_Device,
             &renderPassInfo,
@@ -390,23 +320,37 @@ namespace Daybreak
         std::cout
             << "RenderPass Created!"
             << std::endl;
+
     }
 
 
 
+
+    /**
+     * @brief Destroys the Vulkan render pass.
+     *
+     * Releases the render pass resource owned by this object.
+     */
     void VulkanRenderPass::Shutdown()
     {
+
+        // Destroy render pass if it exists.
         if (m_RenderPass != VK_NULL_HANDLE)
         {
+
             vkDestroyRenderPass(
                 m_Device,
                 m_RenderPass,
                 nullptr
             );
 
+
+            // Reset handle after destruction.
             m_RenderPass =
                 VK_NULL_HANDLE;
         }
+
     }
+
 
 }

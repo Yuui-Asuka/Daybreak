@@ -3,9 +3,34 @@
 #include <stdexcept>
 #include <iostream>
 
+
 namespace Daybreak
 {
 
+    /**
+     * @brief Initializes framebuffer resources.
+     *
+     * A framebuffer represents a collection of image views that are
+     * used as render pass attachments.
+     *
+     * For a typical swapchain rendering setup:
+     *
+     * Swapchain Image
+     *        |
+     *        v
+     *   Image View
+     *        |
+     *        v
+     *   Framebuffer
+     *
+     * Each framebuffer usually corresponds to one swapchain image.
+     *
+     * @param device Vulkan logical device.
+     * @param renderPass Compatible render pass.
+     * @param imageViews Swapchain color image views.
+     * @param extent Framebuffer dimensions.
+     * @param depthImageView Depth attachment image view.
+     */
     void VulkanFramebuffer::Init(
         VkDevice device,
         VkRenderPass renderPass,
@@ -13,44 +38,10 @@ namespace Daybreak
         VkExtent2D extent,
         VkImageView depthImageView)
     {
-        /*
-            保存Logical Device。
 
-            Framebuffer属于Device资源。
-
-            创建和销毁Framebuffer都需要VkDevice。
-        */
         m_Device = device;
 
 
-        /*
-            根据Swapchain ImageView创建Framebuffer。
-
-            一个Swapchain Image对应一个Framebuffer。
-
-            例如：
-
-                Swapchain Image Count = 3
-
-
-                ImageView[0]
-                     |
-                     v
-                Framebuffer[0]
-
-
-                ImageView[1]
-                     |
-                     v
-                Framebuffer[1]
-
-
-                ImageView[2]
-                     |
-                     v
-                Framebuffer[2]
-
-        */
         CreateFramebuffers(
             renderPass,
             imageViews,
@@ -61,6 +52,19 @@ namespace Daybreak
 
 
 
+
+
+    /**
+     * @brief Creates framebuffer objects.
+     *
+     * Each framebuffer contains:
+     *
+     * - One swapchain color attachment.
+     * - One depth attachment.
+     *
+     * The attachment order must match the attachment order defined
+     * in the render pass.
+     */
     void VulkanFramebuffer::CreateFramebuffers(
         VkRenderPass renderPass,
         const std::vector<VkImageView>& imageViews,
@@ -68,11 +72,10 @@ namespace Daybreak
         VkImageView depthImageView
     )
     {
-        /*
-            Framebuffer数量和Swapchain Image数量一致。
 
-            每张Swapchain Image都有自己的Framebuffer。
-        */
+        /*
+         * Create one framebuffer for each swapchain image view.
+         */
         m_Framebuffers.resize(
             imageViews.size()
         );
@@ -84,9 +87,14 @@ namespace Daybreak
         {
 
             /*
-                Framebuffer Attachment列表。
-
-            */
+             * Attachment order must match the render pass:
+             *
+             * Attachment 0:
+             *     Color attachment
+             *
+             * Attachment 1:
+             *     Depth attachment
+             */
             VkImageView attachments[] =
             {
                 imageViews[i],
@@ -95,19 +103,6 @@ namespace Daybreak
 
 
 
-            /*
-                Framebuffer Create Info
-
-                描述：
-
-                    使用哪个RenderPass
-
-                    使用哪些ImageView
-
-                    宽高是多少
-
-
-            */
             VkFramebufferCreateInfo framebufferInfo{};
 
 
@@ -117,32 +112,23 @@ namespace Daybreak
 
 
             /*
-                必须和Pipeline创建时使用的RenderPass一致。
-
-                Pipeline:
-
-                    renderPass A
-
-
-                Framebuffer:
-
-                    renderPass A
-
-
-                才能绑定。
-
-            */
+             * The framebuffer is created for this render pass.
+             *
+             * The render pass defines how these attachments are used
+             * during rendering.
+             */
             framebufferInfo.renderPass =
                 renderPass;
 
 
 
             /*
-                Attachment数量。
-
-                当前只有Color Attachment。
-
-            */
+             * Number of image views attached to this framebuffer.
+             *
+             * Current configuration:
+             *
+             * Color + Depth
+             */
             framebufferInfo.attachmentCount =
                 2;
 
@@ -153,13 +139,12 @@ namespace Daybreak
 
 
             /*
-                Framebuffer尺寸。
-
-                通常等于Swapchain Extent。
-
-            */
+             * Framebuffer dimensions usually match the swapchain
+             * extent.
+             */
             framebufferInfo.width =
                 extent.width;
+
 
             framebufferInfo.height =
                 extent.height;
@@ -167,18 +152,10 @@ namespace Daybreak
 
 
             /*
-                Layer数量。
-
-                普通2D窗口：
-
-                    1
-
-
-                Cubemap / Array Texture:
-
-                    >1
-
-            */
+             * Number of framebuffer layers.
+             *
+             * Standard window rendering uses one layer.
+             */
             framebufferInfo.layers =
                 1;
 
@@ -206,37 +183,16 @@ namespace Daybreak
 
 
 
+
+
+    /**
+     * @brief Destroys framebuffer resources.
+     *
+     * Framebuffers must be destroyed before their associated
+     * image views and swapchain resources.
+     */
     void VulkanFramebuffer::Shutdown()
     {
-        /*
-            销毁Framebuffer。
-
-            创建顺序：
-
-                Swapchain
-
-                    |
-
-                ImageView
-
-                    |
-
-                Framebuffer
-
-
-            销毁顺序相反：
-
-                Framebuffer
-
-                    |
-
-                ImageView
-
-                    |
-
-                Swapchain
-
-        */
 
         for (VkFramebuffer framebuffer :
         m_Framebuffers)

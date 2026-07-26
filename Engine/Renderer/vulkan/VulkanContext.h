@@ -6,126 +6,129 @@
 
 namespace Daybreak
 {
+
     /**
      * @class VulkanContext
      *
-     * @brief Vulkan 全局上下文管理类
+     * @brief Manages the global Vulkan context resources.
      *
-     * 负责管理 Vulkan 初始化最基础的资源:
+     * This class is responsible for creating and destroying the
+     * fundamental Vulkan objects required by the renderer:
      *
      * - Vulkan Instance
      * - Window Surface
      *
-     * 生命周期:
+     * The lifecycle is:
      *
      * Init()
      *     |
-     *     创建 Vulkan Instance
+     *     Creates Vulkan Instance
      *
      * CreateSurface()
      *     |
-     *     创建与窗口系统关联的 Vulkan Surface
+     *     Creates a Vulkan surface connected to the window system
      *
      * Shutdown()
      *     |
-     *     销毁 Vulkan 资源
+     *     Releases Vulkan resources
      *
-     * VulkanContext 是整个 Vulkan Renderer 的入口。
-     * 后续的 Physical Device、Logical Device、
-     * Swapchain 等对象都依赖这里创建的 Instance 和 Surface。
+     * VulkanContext is the entry point of the Vulkan renderer.
+     * Objects such as Physical Device, Logical Device, and Swapchain
+     * depend on the Instance and Surface created here.
      */
     class VulkanContext
     {
     public:
 
         /**
-         * @brief 初始化 Vulkan Instance
+         * @brief Initializes the Vulkan instance.
          *
-         * 创建 Vulkan 全局实例。
+         * Creates the global Vulkan instance used by the application.
          *
-         * 主要工作:
+         * The initialization process includes:
          *
-         * 1. 填充 VkApplicationInfo
-         * 2. 指定需要的 Layer
-         * 3. 指定需要的 Extension
-         * 4. 调用 vkCreateInstance()
-         *
-         * Instance 是 Vulkan 与驱动交互的入口对象。
+         * 1. Configuring application information.
+         * 2. Enabling required validation layers.
+         * 3. Enabling required Vulkan extensions.
+         * 4. Creating the Vulkan instance.
          */
         void Init();
 
+
         /**
-        * @brief 创建 Vulkan Window Surface
-        *
-        * Surface 是 Vulkan 和窗口系统之间的桥梁。
-        *
-        * Swapchain 会基于 Surface 创建，
-        * 用于将 GPU 渲染结果显示到窗口。
-        *
-        * @param window GLFW 创建的窗口对象
-        */
+         * @brief Creates a Vulkan surface from a GLFW window.
+         *
+         * The surface represents the connection between Vulkan
+         * and the native window system.
+         *
+         * The swapchain uses this surface to present rendered
+         * images to the window.
+         *
+         * @param window GLFW window used as the rendering target.
+         */
         void CreateSurface(
             GLFWwindow* window
         );
 
+
         /**
-         * @brief 销毁 Vulkan Context 所管理的资源
+         * @brief Releases all resources managed by VulkanContext.
          *
-         * 销毁:
+         * Destroys:
          *
          * - VkSurfaceKHR
          * - VkInstance
          *
-         * 注意:
-         * 其他 Vulkan 对象依赖 Context，
-         * 所以 Context 通常最后销毁。
+         * Other Vulkan objects depending on this context must be
+         * destroyed before calling this function.
          */
         void Shutdown();
 
+
         /**
-         * @brief 获取 Vulkan Instance
+         * @brief Retrieves the Vulkan instance.
          *
-         * @return VkInstance Vulkan 全局实例句柄
+         * @return VkInstance Vulkan instance handle.
          */
         VkInstance GetInstance() const
         {
             return m_Instance;
         }
 
+
         /**
-         * @brief 获取 Window Surface
+         * @brief Retrieves the window surface.
          *
-         * @return VkSurfaceKHR 当前窗口对应的 Surface
+         * @return VkSurfaceKHR Vulkan window surface handle.
          */
         VkSurfaceKHR GetSurface() const
         {
             return m_Surface;
         }
 
+
     private:
 
         /**
-         * Vulkan Instance
+         * @brief Vulkan instance handle.
          *
-         * Vulkan 程序的顶层对象。
+         * The top-level Vulkan object responsible for:
          *
-         * 负责:
-         * - 连接 Vulkan Loader
-         * - 查询 GPU
-         * - 创建 Device
+         * - Connecting with the Vulkan loader.
+         * - Accessing physical devices.
+         * - Creating logical devices.
          */
         VkInstance m_Instance = VK_NULL_HANDLE;
 
+
         /**
-         * Window Surface
+         * @brief Vulkan window surface handle.
          *
-         * 表示 Vulkan 渲染目标窗口。
-         *
-         * Swapchain 创建时需要使用该对象。
+         * Represents the target window used for presentation.
+         * Required when creating the swapchain.
          */
         VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 
     };
-
 
 }

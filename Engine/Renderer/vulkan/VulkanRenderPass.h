@@ -2,144 +2,119 @@
 
 #include <vulkan/vulkan.h>
 
+
 namespace Daybreak
 {
 
-    /*
-        VulkanRenderPass
 
-        管理 Vulkan RenderPass。
-
-        RenderPass 描述一次渲染过程：
-
-            Attachment
-                |
-                |
-                v
-            Subpass
-                |
-                |
-                v
-            Render Pipeline
-
-
-        它定义：
-
-        - 渲染目标格式
-        - Color Attachment
-        - Depth Attachment
-        - Load / Store 操作
-        - Layout转换
-
-
-        当前项目：
-
-        只有一个Color Attachment。
-
-        渲染流程：
-
-            Swapchain Image
-
-                  |
-
-            RenderPass
-
-                  |
-
-            Framebuffer
-
-
-        生命周期：
-
-            Init()
-
-                |
-                v
-
-            创建 VkRenderPass
-
-
-            Shutdown()
-
-                |
-                v
-
-            销毁 VkRenderPass
-
-    */
+    /**
+     * @class VulkanRenderPass
+     *
+     * @brief Manages Vulkan render pass resources.
+     *
+     * A render pass defines the structure of a rendering operation.
+     *
+     * It describes:
+     *
+     * - Render attachments
+     * - Color output
+     * - Depth testing resources
+     * - Load and store operations
+     * - Image layout transitions
+     *
+     * Rendering flow:
+     *
+     * Swapchain Image
+     *        |
+     *        v
+     * RenderPass
+     *        |
+     *        v
+     * Framebuffer
+     *
+     *
+     * Lifecycle:
+     *
+     * Init()
+     *      |
+     *      v
+     * Create VkRenderPass
+     *
+     * Shutdown()
+     *      |
+     *      v
+     * Destroy VkRenderPass
+     */
     class VulkanRenderPass
     {
     public:
 
-        /*
-            创建RenderPass。
 
-
-            device:
-
-                Vulkan Logical Device。
-
-
-            imageFormat:
-
-                Swapchain Image Format。
-
-                RenderPass的Color Attachment
-                必须与Swapchain格式匹配。
-
-
-        */
+        /**
+         * @brief Initializes the Vulkan render pass.
+         *
+         * Creates a render pass using the specified
+         * logical device and swapchain image format.
+         *
+         * @param device Vulkan logical device used to create the render pass.
+         * @param imageFormat Swapchain image format used by the color attachment.
+         */
         void Init(
             VkDevice device,
             VkFormat imageFormat
         );
 
 
-        /*
-            销毁RenderPass资源。
-        */
+
+        /**
+         * @brief Releases the render pass resource.
+         *
+         * Destroys the VkRenderPass object.
+         */
         void Shutdown();
 
 
-        /*
-            获取VkRenderPass句柄。
 
-
-            创建Graphics Pipeline时：
-
-                VkGraphicsPipelineCreateInfo::renderPass
-
-
-            需要绑定这个对象。
-
-
-        */
+        /**
+         * @brief Retrieves the Vulkan render pass handle.
+         *
+         * Used when creating the graphics pipeline:
+         *
+         * VkGraphicsPipelineCreateInfo::renderPass
+         *
+         * @return VkRenderPass Render pass handle.
+         */
         VkRenderPass GetRenderPass() const
         {
             return m_RenderPass;
         }
 
 
+
     private:
 
-        /*
-            Vulkan Logical Device。
 
-
-            RenderPass属于Device资源。
-
-            创建和销毁都需要Device。
-        */
+        /**
+         * @brief Vulkan logical device.
+         *
+         * The render pass is a device-owned resource.
+         *
+         * Required for creation and destruction.
+         */
         VkDevice m_Device =
             VK_NULL_HANDLE;
 
 
-        /*
-            Vulkan RenderPass对象。
-        */
+
+        /**
+         * @brief Vulkan render pass handle.
+         *
+         * Defines the rendering attachments and operations.
+         */
         VkRenderPass m_RenderPass =
             VK_NULL_HANDLE;
 
     };
+
 
 }

@@ -4,69 +4,58 @@
 #include <stdexcept>
 #include <iostream>
 
+
 namespace Daybreak
 {
 
+
+    /**
+     * @brief Initializes Vulkan shader modules.
+     *
+     * Loads SPIR-V shader binaries from files and creates
+     * Vulkan shader modules for vertex and fragment stages.
+     *
+     * @param device Vulkan logical device used to create shader modules.
+     * @param vertPath Path to the compiled vertex shader SPIR-V file.
+     * @param fragPath Path to the compiled fragment shader SPIR-V file.
+     */
     void VulkanShader::Init(
         VkDevice device,
         const std::string& vertPath,
         const std::string& fragPath)
     {
-        /*
-            保存Logical Device。
 
-            Shader Module属于Device资源。
-
-            创建和销毁都需要VkDevice。
-        */
+        // Store the logical device used by shader resources.
         m_Device = device;
 
 
-        /*
-            读取Vertex Shader SPIR-V。
 
-            文件格式：
-
-                GLSL
-                  |
-                  v
-                glslc编译
-                  |
-                  v
-                .spv
-                  |
-                  v
-                VkShaderModule
-
-        */
+        // Load compiled vertex shader SPIR-V binary.
         auto vertCode =
             ReadFile(vertPath);
 
 
-        /*
-            读取Fragment Shader SPIR-V。
-        */
+
+        // Load compiled fragment shader SPIR-V binary.
         auto fragCode =
             ReadFile(fragPath);
 
 
 
-        /*
-            创建Vertex Shader Module。
-        */
+        // Create vertex shader module.
         m_VertexShader =
             CreateShaderModule(
                 vertCode
             );
 
 
-        /*
-            创建Fragment Shader Module。
-        */
+
+        // Create fragment shader module.
         m_FragmentShader =
             CreateShaderModule(
                 fragCode
             );
+
 
 
         std::cout
@@ -76,19 +65,23 @@ namespace Daybreak
 
 
 
+
+
+    /**
+     * @brief Reads a binary file into memory.
+     *
+     * Used to load SPIR-V shader files before creating
+     * Vulkan shader modules.
+     *
+     * @param filename Path to the binary file.
+     *
+     * @return std::vector<char> File content stored as bytes.
+     */
     std::vector<char> VulkanShader::ReadFile(
         const std::string& filename)
     {
-        /*
-            以二进制方式读取SPIR-V。
-            ios::ate:
-                打开时移动到文件末尾。
-                方便获取文件大小。
-            ios::binary:
-                防止Windows换行转换。
 
-        */
-
+        // Open the file in binary mode and move to the end.
         std::ifstream file(
             filename,
             std::ios::ate | std::ios::binary
@@ -103,16 +96,8 @@ namespace Daybreak
         }
 
 
-        /*
-            获取文件大小。
 
-            tellg():
-
-                当前文件指针位置。
-                因为打开时位于末尾，
-                所以就是文件大小。
-
-        */
+        // Get file size in bytes.
         size_t fileSize =
             static_cast<size_t>(
                 file.tellg()
@@ -120,24 +105,19 @@ namespace Daybreak
 
 
 
-        /*
-            创建Buffer保存SPIR-V二进制数据。
-        */
+        // Allocate memory for file data.
         std::vector<char> buffer(
             fileSize
         );
 
 
-        /*
-            回到文件开头。
-        */
+
+        // Move file pointer back to the beginning.
         file.seekg(0);
 
 
 
-        /*
-            读取全部Shader数据。
-        */
+        // Read the entire file into memory.
         file.read(
             buffer.data(),
             fileSize
@@ -152,16 +132,21 @@ namespace Daybreak
 
 
 
+
+
+    /**
+     * @brief Creates a Vulkan shader module from SPIR-V code.
+     *
+     * Converts SPIR-V binary data into a VkShaderModule
+     * object that can be used by the graphics pipeline.
+     *
+     * @param code SPIR-V binary shader data.
+     *
+     * @return VkShaderModule Created Vulkan shader module.
+     */
     VkShaderModule VulkanShader::CreateShaderModule(
         const std::vector<char>& code)
     {
-        /*
-            Shader Module Create Info
-            Vulkan接收的是：
-                SPIR-V binary
-            不是：
-                GLSL文本
-        */
 
         VkShaderModuleCreateInfo createInfo{};
 
@@ -170,23 +155,14 @@ namespace Daybreak
             VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 
 
-        /*
-            SPIR-V字节大小。
-            注意：
-            这里是byte数量。
 
-        */
+        // Size of SPIR-V binary data in bytes.
         createInfo.codeSize =
             code.size();
 
 
 
-        /*
-            Vulkan要求：
-                const uint32_t*
-            SPIR-V格式：
-                32bit word数组
-        */
+        // SPIR-V data must be provided as 32-bit words.
         createInfo.pCode =
             reinterpret_cast<const uint32_t*>(
                 code.data()
@@ -217,11 +193,18 @@ namespace Daybreak
 
 
 
+
+
+    /**
+     * @brief Releases Vulkan shader modules.
+     *
+     * Destroys vertex and fragment shader modules
+     * created during initialization.
+     */
     void VulkanShader::Shutdown()
     {
-        /*
-            销毁Vertex Shader Module。
-        */
+
+        // Destroy vertex shader module.
         if (m_VertexShader != VK_NULL_HANDLE)
         {
             vkDestroyShaderModule(
@@ -235,9 +218,8 @@ namespace Daybreak
         }
 
 
-        /*
-            销毁Fragment Shader Module。
-        */
+
+        // Destroy fragment shader module.
         if (m_FragmentShader != VK_NULL_HANDLE)
         {
             vkDestroyShaderModule(
@@ -249,6 +231,8 @@ namespace Daybreak
             m_FragmentShader =
                 VK_NULL_HANDLE;
         }
+
     }
+
 
 }
