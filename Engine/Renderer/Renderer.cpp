@@ -70,9 +70,13 @@ namespace Daybreak
      *
      * Delegates frame rendering to the Vulkan renderer.
      */
-    void Renderer::DrawFrame()
+    void Renderer::DrawFrame(
+        Scene& scene
+    )
     {
-        s_Renderer->DrawFrame();
+        s_Renderer->DrawFrame(
+            scene
+        );
     }
 
 
@@ -91,5 +95,37 @@ namespace Daybreak
     {
         s_Renderer->SetCamera(camera);
     }
+
+
+    void Renderer::Render(
+        Scene& scene
+    )
+    {
+
+        const auto& entities =
+            scene.GetEntities();
+
+
+        for (Entity* entity : entities)
+        {
+
+            if (entity == nullptr)
+                continue;
+
+
+            /*
+                这里以后调用 VulkanRenderer
+
+                例如:
+
+                VulkanRenderer::DrawEntity(entity)
+
+            */
+
+
+        }
+
+    }
+
 
 }

@@ -27,6 +27,9 @@ add_library(Engine STATIC
     Scene/Camera/CameraController.cpp
     Renderer/Texture/VulkanTexture.cpp
     Renderer/vulkan/VulkanRenderer.cpp
+    Scene/Entity/Entity.cpp
+    Scene/Scene/Scene.cpp
+    Scene/Transform/Transform.cpp
  "Window/Window.h" 
  "Window/Window.cpp" 
  "Renderer/opengl/OpenglRenderer.cpp" 
@@ -55,7 +58,15 @@ add_library(Engine STATIC
  "Renderer/vulkan/Buffer/VulkanUniformBuffer.cpp" 
  "Renderer/vulkan/Descriptor/VulkanDescriptorSetLayout.h" 
  "Renderer/vulkan/Descriptor/VulkanDescriptorSetLayout.cpp" 
- "Renderer/vulkan/Descriptor/VulkanDescriptorPool.cpp" "Renderer/vulkan/Buffer/VulkanDepthBuffer.h" "Renderer/vulkan/Buffer/VulkanDepthBuffer.cpp" "Scene/Scene/CubeObject.h" "Input/Input.h" "Input/Input.cpp" "Renderer/Texture/VulkanTexture.cpp" "Renderer/vulkan/VulkanRenderer.cpp")
+ "Renderer/vulkan/Descriptor/VulkanDescriptorPool.cpp" 
+ "Renderer/vulkan/Buffer/VulkanDepthBuffer.h" 
+ "Renderer/vulkan/Buffer/VulkanDepthBuffer.cpp" 
+ "Scene/Scene/CubeObject.h" 
+ "Input/Input.h" 
+ "Input/Input.cpp" 
+ "Renderer/Texture/VulkanTexture.cpp" 
+ "Renderer/vulkan/VulkanRenderer.cpp" 
+ "Scene/Entity/Entity.cpp" "Scene/Entity/Entity.h" "Scene/Scene/Scene.cpp" "Scene/Scene/Scene.h" "Scene/Transform/Transform.cpp" "Scene/Transform/Transform.h")
 
 # 对外公开头文件目录
 target_include_directories(Engine PUBLIC

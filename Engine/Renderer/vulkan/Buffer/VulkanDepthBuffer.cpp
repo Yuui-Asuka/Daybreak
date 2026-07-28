@@ -39,7 +39,6 @@ namespace Daybreak
         m_PhysicalDevice = physicalDevice;
 
 
-
         /**
          * @brief Select depth image format.
          *
@@ -48,7 +47,6 @@ namespace Daybreak
          */
         VkFormat depthFormat =
             VK_FORMAT_D32_SFLOAT;
-
 
 
         /**
@@ -131,7 +129,6 @@ namespace Daybreak
         }
 
 
-
         /**
          * @brief Query required memory properties.
          */
@@ -145,7 +142,6 @@ namespace Daybreak
         );
 
 
-
         VkMemoryAllocateInfo allocInfo{};
 
 
@@ -155,7 +151,6 @@ namespace Daybreak
 
         allocInfo.allocationSize =
             requirements.size;
-
 
 
         /**
@@ -171,7 +166,6 @@ namespace Daybreak
             );
 
 
-
         if (vkAllocateMemory(
             m_Device,
             &allocInfo,
@@ -185,7 +179,6 @@ namespace Daybreak
         }
 
 
-
         /**
          * @brief Bind allocated memory to the depth image.
          */
@@ -195,7 +188,6 @@ namespace Daybreak
             m_Memory,
             0
         );
-
 
 
         /**
@@ -259,7 +251,6 @@ namespace Daybreak
     }
 
 
-
     /**
      * @brief Releases depth buffer resources.
      *
@@ -315,7 +306,6 @@ namespace Daybreak
     }
 
 
-
     /**
      * @brief Finds a compatible Vulkan memory type.
      *
@@ -363,6 +353,5 @@ namespace Daybreak
         );
 
     }
-
 
 }

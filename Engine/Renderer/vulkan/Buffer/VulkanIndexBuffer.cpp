@@ -35,7 +35,6 @@ namespace Daybreak
             sizeof(uint32_t) * indices.size();
 
 
-
         /**
          * @brief Create underlying Vulkan buffer.
          *
@@ -48,7 +47,6 @@ namespace Daybreak
             size,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT
         );
-
 
 
         /**
@@ -98,7 +96,6 @@ namespace Daybreak
         );
 
     }
-
 
 
     /**

@@ -20,6 +20,7 @@
 #include "Descriptor/VulkanDescriptorSetLayout.h"
 #include "Buffer/VulkanDepthBuffer.h"
 #include "../../Scene/Camera/Camera.h"
+#include "../../Scene/Scene/Scene.h"
 
 
 namespace Daybreak
@@ -69,7 +70,6 @@ namespace Daybreak
 
     public:
 
-
         /**
          * @brief Initializes Vulkan renderer resources.
          *
@@ -113,7 +113,9 @@ namespace Daybreak
          * - Submit command buffer
          * - Present rendered image
          */
-        void DrawFrame();
+        void DrawFrame(
+            Scene& scene
+        );
 
 
 
@@ -129,9 +131,12 @@ namespace Daybreak
             Camera* camera
         );
 
+        void DrawEntity(
+            Entity& entity
+        );
+
 
     private:
-
 
         /**
          * @brief Recreates swapchain-dependent resources.

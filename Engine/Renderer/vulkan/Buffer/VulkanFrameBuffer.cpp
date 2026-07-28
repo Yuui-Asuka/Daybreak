@@ -51,9 +51,6 @@ namespace Daybreak
     }
 
 
-
-
-
     /**
      * @brief Creates framebuffer objects.
      *
@@ -182,9 +179,6 @@ namespace Daybreak
     }
 
 
-
-
-
     /**
      * @brief Destroys framebuffer resources.
      *
@@ -206,7 +200,6 @@ namespace Daybreak
                 );
             }
         }
-
 
         m_Framebuffers.clear();
     }

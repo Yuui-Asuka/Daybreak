@@ -3,6 +3,7 @@
 #include "Renderer/Mesh/Mesh.h"
 
 #include <iostream>
+#include <Scene/Entity/Entity.h>
 
 
 namespace Daybreak
@@ -251,6 +252,8 @@ namespace Daybreak
 
     }
 
+
+
     /**
  * @brief Renders one frame.
  *
@@ -262,8 +265,78 @@ namespace Daybreak
  * 4. Submit command buffer to GPU.
  * 5. Present rendered image to the window.
  */
-    void VulkanRenderer::DrawFrame()
+    void VulkanRenderer::DrawFrame(
+        Scene& scene
+    )
     {
+
+        for (Entity* entity :
+            scene.GetEntities())
+        {
+
+            if (entity == nullptr)
+                continue;
+
+            for (Entity* entity :
+                scene.GetEntities())
+            {
+
+                if (entity == nullptr)
+                    continue;
+
+
+                DrawEntity(
+                    *entity
+                );
+
+            }
+            // 更新Transform
+            // 更新UBO
+            // DrawIndexed
+
+            //UniformBufferObject ubo{};
+
+
+
+            //ubo.model =
+            //    entity->Transform.GetMatrix();
+
+
+
+            //ubo.view =
+            //    m_Camera->GetViewMatrix();
+
+
+
+            //ubo.projection =
+            //    m_Camera->GetProjectionMatrix();
+
+
+
+            //m_UniformBuffer.Upload(
+            //    &ubo,
+            //    sizeof(ubo)
+            //);
+
+            //if (m_Camera)
+            //{
+
+            //    ubo.view =
+            //        m_Camera->GetViewMatrix();
+
+
+            //    ubo.projection =
+            //        m_Camera->GetProjectionMatrix();
+
+            //}
+
+
+            //// Upload transformation data to GPU.
+            //m_UniformBuffer.Upload(
+            //    &ubo,
+            //    sizeof(ubo)
+            //);
+        }
 
         int width;
         int height;
@@ -309,31 +382,17 @@ namespace Daybreak
 
 
         // Update per-frame uniform data.
-        Daybreak::UniformBufferObject ubo{};
+        //Daybreak::UniformBufferObject ubo{};
 
 
-        ubo.model =
-            glm::mat4(1.0f);
+        //ubo.model =
+        //    glm::mat4(1.0f);
+
+        //ubo.model =
+        //    entity.Transform.GetMatrix();
 
 
-        if (m_Camera)
-        {
-
-            ubo.view =
-                m_Camera->GetViewMatrix();
-
-
-            ubo.projection =
-                m_Camera->GetProjectionMatrix();
-
-        }
-
-
-        // Upload transformation data to GPU.
-        m_UniformBuffer.Upload(
-            &ubo,
-            sizeof(ubo)
-        );
+        
 
 
         // Acquire an available swapchain image.
@@ -828,5 +887,69 @@ namespace Daybreak
         m_Camera = camera;
     }
 
+
+    void VulkanRenderer::DrawEntity(
+        Entity& entity
+    )
+    {
+
+        /*
+            更新当前Entity的Transform
+
+            model:
+                当前物体矩阵
+
+            view:
+                Camera矩阵
+
+            projection:
+                投影矩阵
+
+        */
+
+        UniformBufferObject ubo{};
+
+
+        ubo.model =
+            entity.Transform.GetMatrix();
+
+
+
+        if (m_Camera)
+        {
+
+            ubo.view =
+                m_Camera->GetViewMatrix();
+
+
+            ubo.projection =
+                m_Camera->GetProjectionMatrix();
+
+        }
+
+
+
+        /*
+            上传UBO
+
+        */
+
+        m_UniformBuffer.Upload(
+            &ubo,
+            sizeof(ubo)
+        );
+
+
+
+        /*
+            把绘制请求交给CommandBuffer
+
+        */
+
+        //m_CommandBuffer.DrawMesh(
+        //    entity.Mesh
+        //);
+
+    }
 
 }

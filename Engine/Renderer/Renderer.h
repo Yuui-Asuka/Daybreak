@@ -2,6 +2,7 @@
 
 
 #include "Vulkan/VulkanRenderer.h"
+#include <Scene/Scene/Scene.h>
 
 
 namespace Daybreak
@@ -52,8 +53,9 @@ namespace Daybreak
          *
          * Delegates frame execution to the active renderer backend.
          */
-        static void DrawFrame();
-
+        static void DrawFrame(
+            Scene& scene
+        );
 
         /**
          * @brief Sets the active rendering camera.
@@ -65,6 +67,11 @@ namespace Daybreak
         static void SetCamera(
             Camera* camera
         );
+
+        static void Render(
+            Scene& scene
+        );
+
 
 
     private:
